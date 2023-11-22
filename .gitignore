@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint configuration
+.eslintcache
+
+# Optional Prettier cache
+.prettierignore
+.prettier.yaml
+.prettier.json
+.prettierrc
+
+# dotenv environment variables file
+.env
+
+# Express.js generated files
+dist/
+
+# VSCode specific files
+.vscode/
+
+# macOS
+.DS_Store
+
+# OS generated files
+Thumbs.db
+
+# uploads folder
+uploads
