@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const Account = require('../models/account.model');
 const ApiError = require('../helpers/error');
@@ -30,13 +31,36 @@ module.exports = {
                 email,
                 password: hashedPassword
             };
-            console.log('account', account);
-            // create active token
+            // create activation token
             const activation_token = activationToken(account);
-            console.log('active token', activation_token);
             const url = `${baseURL}/auth/active/${activation_token}`;
             sendEmailRegister(email, url, 'Verify your email');
             sendRes(res, 200, undefined, 'Welcome! Please check your email');
+        } catch (error) {
+            next(error);
+        }
+    },
+    activation: async (req, res, next) => {
+        try {
+            // get activate token
+            const { activation_token } = req.body;
+            // decode token
+            const account = jwt.verify(
+                activation_token,
+                process.env.ACTIVATION_SECRET
+            );
+            // check account
+            const foundAccount = await Account.findOne({
+                email: account.email
+            });
+            if (foundAccount)
+                return sendErr(
+                    res,
+                    new ApiError(409, 'Email is already registered')
+                );
+            const newAccount = new Account(account);
+            await newAccount.save();
+            sendRes(res, 200, undefined, 'Account has been activated.');
         } catch (error) {
             next(error);
         }
