@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const accountSchema = new Schema(
     {
-        display_name: {
+        name: {
             type: String,
             required: true
         },
