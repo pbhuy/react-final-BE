@@ -138,5 +138,57 @@ module.exports = {
             next(error);
         }
     },
-    reset: async (req, res, next) => {}
+    reset: async (req, res, next) => {
+        try {
+            const account_id = req.id;
+            const { password } = req.body;
+            // hash password
+            const salt = await bcrypt.genSalt(saltRounds);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            // update
+            await Account.findByIdAndUpdate(account_id, {
+                password: hashedPassword
+            });
+            sendRes(res, 200, undefined, 'Password was updated successfully');
+        } catch (error) {
+            next(error);
+        }
+    },
+    profile: async (req, res, next) => {
+        try {
+            const account_id = req.id;
+            const account_info = await Account.findById(account_id).select(
+                '-password'
+            );
+            sendRes(res, 200, account_info);
+        } catch (error) {
+            next(error);
+        }
+    },
+    update: async (req, res, next) => {
+        try {
+            // get info
+            const account_id = req.id;
+            const { name, phone, address } = req.body;
+            // upload image
+            let result;
+            if (req.file)
+                result = await cloudinary.uploader.upload(req.file.path, {
+                    folder: 'avatar'
+                });
+            const new_account = { name, phone, address };
+            new_account.avatar = result && result.url;
+            // update
+            const account = await Account.findByIdAndUpdate(
+                account_id,
+                new_account,
+                {
+                    new: true
+                }
+            ).select('-password');
+            sendRes(res, 200, account, 'Update profile successfully');
+        } catch (error) {
+            next(error);
+        }
+    }
 };
