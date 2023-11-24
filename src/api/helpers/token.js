@@ -12,7 +12,7 @@ const refreshToken = (account) => {
 };
 const accessToken = (account) => {
     const token = jwt.sign(
-        { id: account._id, role: account.role },
+        { id: account.id, role: account.role },
         process.env.ACCESS_SECRET,
         {
             expiresIn: '1h'
