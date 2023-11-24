@@ -94,6 +94,45 @@ module.exports = {
             next(error);
         }
     },
+    googleLogin: async (req, res, next) => {
+        try {
+            const email = req.profile.emails[0].value;
+            const foundAccount = await Account.findOne({ email });
+            const name = req.profile.displayName;
+            const password = email + process.env.GOOGLE_AUTH_CLIENT_ID;
+            const salt = await bcrypt.genSalt(saltRounds);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            const avatar = req.profile.photos[0].value;
+            let account = { name, email, password: hashedPassword };
+            // register new account
+            if (!foundAccount) {
+                const new_account = new Account({
+                    ...account,
+                    avatar
+                });
+                await new_account.save();
+            } else {
+                // login
+                const refresh_token = refreshToken(account);
+                res.cookie('_apprftoken', refresh_token, {
+                    httpOnly: true,
+                    path: '/api/accounts/auth/access',
+                    maxAge: 24 * 60 * 60 * 1000 // 24hrs
+                });
+            }
+            sendRes(res, 200, undefined, 'Login successfully');
+        } catch (error) {
+            next(error);
+        }
+    },
+    facebookLogin: async (req, res, next) => {
+        try {
+            console.log('controller auth facebook');
+            console.log('user', req.data);
+        } catch (error) {
+            next(error);
+        }
+    },
     access: async (req, res, next) => {
         try {
             const refresh_token = req.cookies._apprftoken;
