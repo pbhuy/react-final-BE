@@ -21,11 +21,11 @@ const jwtOptions = {
 passport.use(
     new JwtStrategy(jwtOptions, async (payload, done) => {
         try {
-            const { id, role } = payload;
-            if (!id || !role) {
+            const { _id, role } = payload;
+            if (!_id || !role) {
                 return done(null, false);
             }
-            return done(null, { id, role });
+            return done(null, { _id, role });
         } catch (error) {
             return done(error, false);
         }
