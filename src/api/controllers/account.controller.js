@@ -14,7 +14,6 @@ const {
 
 const saltRounds = 10;
 const baseURL = 'http://localhost:3000';
-
 module.exports = {
     register: async (req, res, next) => {
         try {

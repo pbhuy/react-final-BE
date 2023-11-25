@@ -33,6 +33,10 @@ app.use(passport.initialize());
 // logger
 app.use(morgan('dev'));
 
+app.get('/', (req, res) => {
+    res.send('<h1 style="text-align: center">Welcome React Final API</h1>');
+});
+
 // routes
 app.use('/api', router);
 
