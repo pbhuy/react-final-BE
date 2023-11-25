@@ -46,19 +46,28 @@ module.exports = {
   activation: async (req, res, next) => {
     try {
       // get activate token
+      console.log("get token");
       const { activation_token } = req.body;
+      console.log("get success", activation_token);
+
       // decode token
       const account = jwt.verify(
         activation_token,
         process.env.ACTIVATION_SECRET
       );
+      console.log("get success", account);
+
       // check account
       const foundAccount = await Account.findOne({
         email: account.email,
       });
+      console.log("get success", foundAccount);
+
       if (foundAccount)
         return sendErr(res, new ApiError(409, "Email is already registered"));
       const newAccount = new Account(account);
+      console.log("newAccount", newAccount);
+
       await newAccount.save();
       sendRes(res, 200, undefined, "Account has been activated.");
     } catch (error) {
@@ -174,7 +183,8 @@ module.exports = {
         role: account.role,
       });
       // send email
-      const url = `${baseURL}/auth/reset-password/${access_token}`;
+      const url = `${process.env.FE_CONFIRM_FORGOT_URL}?token=${access_token}`;
+
       sendEmailReset(email, url, "Reset your password", account.name);
       sendRes(
         res,
