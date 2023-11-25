@@ -167,7 +167,7 @@ module.exports = {
                     if (err)
                         return sendErr(res, new ApiError('Please login again'));
                     const access_token = accessToken({
-                        _id: account.id,
+                        _id: account._id,
                         role: account.role
                     });
                     sendRes(res, 200, { access_token });
@@ -223,7 +223,7 @@ module.exports = {
     },
     profile: async (req, res, next) => {
         try {
-            const account_id = req.id;
+            const account_id = req._id;
             const account_info = await Account.findById(account_id).select(
                 '-password'
             );
@@ -235,7 +235,7 @@ module.exports = {
     update: async (req, res, next) => {
         try {
             // get info
-            const account_id = req.id;
+            const account_id = req._id;
             const { name, phone, address } = req.body;
             // upload image
             let result;
