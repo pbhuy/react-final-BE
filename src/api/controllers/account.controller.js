@@ -47,11 +47,22 @@ module.exports = {
         try {
             // get activate token
             const { activation_token } = req.body;
+            if (!activation_token)
+                return sendErr(
+                    res,
+                    new ApiError(400, 'Missing or Invalid activate token')
+                );
             // decode token
-            const account = jwt.verify(
+            const { name, email, password } = jwt.verify(
                 activation_token,
                 process.env.ACTIVATION_SECRET
             );
+            // check fields after decode
+            if (!name || !email || !password)
+                return sendErr(
+                    res,
+                    new ApiError(400, 'name, email or password is required')
+                );
             // check account
             const foundAccount = await Account.findOne({
                 email: account.email
@@ -61,8 +72,8 @@ module.exports = {
                     res,
                     new ApiError(409, 'Email is already registered')
                 );
-            const newAccount = new Account(account);
-            await newAccount.save();
+            const account = new Account({ name, email, password });
+            await account.save();
             sendRes(res, 200, undefined, 'Account has been activated.');
         } catch (error) {
             next(error);
