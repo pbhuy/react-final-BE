@@ -257,5 +257,15 @@ module.exports = {
         } catch (error) {
             next(error);
         }
+    },
+    logout: (req, res, next) => {
+        try {
+            res.clearCookie('_apprftoken', {
+                path: '/api/accounts/auth/access'
+            });
+            sendRes(res, 200, undefined, 'Log out successfully');
+        } catch (error) {
+            next(error);
+        }
     }
 };
