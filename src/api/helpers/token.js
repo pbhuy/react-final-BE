@@ -2,14 +2,14 @@ const jwt = require('jsonwebtoken');
 
 const refreshToken = (payload) => {
     const token = jwt.sign(payload, process.env.REFRESH_SECRET, {
-        expiresIn: '24h'
+        expiresIn: '7d'
     });
     return token;
 };
 
 const accessToken = (payload) => {
     const token = jwt.sign(payload, process.env.ACCESS_SECRET, {
-        expiresIn: '1h'
+        expiresIn: '10m'
     });
     return token;
 };
