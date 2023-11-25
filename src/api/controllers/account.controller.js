@@ -13,7 +13,7 @@ const {
 } = require("../helpers/token");
 
 const saltRounds = 10;
-const baseURL = process.env.FRONTEND_URL;
+const baseURL = process.env.FE_URL;
 module.exports = {
   register: async (req, res, next) => {
     try {
