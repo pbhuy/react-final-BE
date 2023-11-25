@@ -34,7 +34,7 @@ accountRoute.get(
     accountController.facebookLogin
 );
 
-accountRoute.post('/auth/access', accountController.access);
+accountRoute.post('/auth/refresh', accountController.refresh);
 accountRoute.post('/auth/forgot', accountController.forgot);
 accountRoute.post('/auth/reset', authenticateJWT, accountController.reset);
 accountRoute.get('/auth/profile', authenticateJWT, accountController.profile);

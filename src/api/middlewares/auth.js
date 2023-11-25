@@ -16,7 +16,7 @@ const authenticateJWT = (req, res, next) => {
                 new ApiError(401, 'Access denied! Missing or invalid token.')
             );
         }
-        req.id = account.id;
+        req.id = account._id;
         req.role = account.role;
         return next();
     })(req, res, next);

@@ -14,7 +14,6 @@ const {
 
 const saltRounds = 10;
 const baseURL = 'http://localhost:3000';
-
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -83,18 +82,26 @@ module.exports = {
                     res,
                     new ApiError(401, 'Email or password is incorrect')
                 );
-            const refresh_token = refreshToken(account);
-            res.cookie('_apprftoken', refresh_token, {
-                httpOnly: true,
-                path: '/api/accounts/auth/access',
-                maxAge: 24 * 60 * 60 * 1000 // 24hrs
+            const refresh_token = refreshToken({
+                _id: account._id,
+                role: account.role
             });
-            sendRes(res, 200, undefined, 'Login successfully');
+            const access_token = accessToken({
+                _id: account._id,
+                role: account.role
+            });
+            sendRes(
+                res,
+                200,
+                { refresh_token, access_token },
+                'Login successfully'
+            );
         } catch (error) {
             next(error);
         }
     },
     googleLogin: async (req, res, next) => {
+        let refresh_token, access_token;
         try {
             const email = req.profile.emails[0].value;
             const foundAccount = await Account.findOne({ email });
@@ -111,16 +118,31 @@ module.exports = {
                     avatar
                 });
                 await new_account.save();
+                refresh_token = refreshToken({
+                    _id: new_account._id,
+                    role: new_account.role
+                });
+                access_token = accessToken({
+                    _id: new_account._id,
+                    role: new_account.role
+                });
             } else {
-                // login
-                const refresh_token = refreshToken(account);
-                res.cookie('_apprftoken', refresh_token, {
-                    httpOnly: true,
-                    path: '/api/accounts/auth/access',
-                    maxAge: 24 * 60 * 60 * 1000 // 24hrs
+                // login with exist account
+                refresh_token = refreshToken({
+                    _id: foundAccount._id,
+                    role: foundAccount.role
+                });
+                access_token = accessToken({
+                    _id: foundAccount._id,
+                    role: foundAccount.role
                 });
             }
-            sendRes(res, 200, undefined, 'Login successfully');
+            sendRes(
+                res,
+                200,
+                { refresh_token, access_token },
+                'Login successfully'
+            );
         } catch (error) {
             next(error);
         }
@@ -133,9 +155,9 @@ module.exports = {
             next(error);
         }
     },
-    access: async (req, res, next) => {
+    refresh: async (req, res, next) => {
         try {
-            const refresh_token = req.cookies._apprftoken;
+            const { refresh_token } = req.body;
             if (!refresh_token)
                 return sendErr(res, new ApiError(400, 'Please login'));
             jwt.verify(
@@ -144,8 +166,11 @@ module.exports = {
                 (err, account) => {
                     if (err)
                         return sendErr(res, new ApiError('Please login again'));
-                    const access_token = accessToken(account);
-                    sendRes(res, 200, access_token);
+                    const access_token = accessToken({
+                        _id: account.id,
+                        role: account.role
+                    });
+                    sendRes(res, 200, { access_token });
                 }
             );
         } catch (error) {
@@ -160,10 +185,13 @@ module.exports = {
             if (!account)
                 return sendErr(res, {
                     status: 400,
-                    message: 'Email  not found'
+                    message: 'Email not found'
                 });
             // create token
-            const access_token = accessToken(account);
+            const access_token = accessToken({
+                _id: account._id,
+                role: account.role
+            });
             // send email
             const url = `${baseURL}/auth/reset-password/${access_token}`;
             sendEmailReset(email, url, 'Reset your password', account.name);
@@ -179,7 +207,7 @@ module.exports = {
     },
     reset: async (req, res, next) => {
         try {
-            const account_id = req.id;
+            const account_id = req._id;
             const { password } = req.body;
             // hash password
             const salt = await bcrypt.genSalt(saltRounds);
