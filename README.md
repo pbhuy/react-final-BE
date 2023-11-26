@@ -32,6 +32,14 @@ For more detailed API documentation, refer to the Postman collection available [
 
 -   /auth/google: Handles login via Google authentication.
 
+    -   Workflow:
+
+    1. FE call: /accounts/auth/auth/google
+    2. Select google account to login
+    3. Handle login after callback from google:
+        - /accounts/auth/login/failed: in case of login failure.
+        - /accounts/auth/login/success: in case of login success (register if the account is not found, log in if the account exists).
+
 -   /auth/facebook: Creates a new account and sends an activation email. ()
 
 -   /auth/refresh: Generates a new access token using a refresh token.

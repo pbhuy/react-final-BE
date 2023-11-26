@@ -4,14 +4,6 @@ const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
 const { Strategy: FacebookStrategy } = require('passport-facebook');
 
-passport.serializeUser(function (user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function (user, done) {
-    done(null, user);
-});
-
 // JWT Strategy
 const jwtOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -41,7 +33,7 @@ passport.use(
             callbackURL: '/api/accounts/auth/google/callback'
         },
         (accessToken, refreshToken, profile, done) => {
-            return done(null, profile);
+            done(null, profile);
         }
     )
 );
@@ -55,9 +47,17 @@ passport.use(
             callbackURL: '/api/accounts/auth/facebook/callback'
         },
         (accessToken, refreshToken, profile, done) => {
-            return done(null, profile);
+            done(null, profile);
         }
     )
 );
+
+passport.serializeUser(function (user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function (user, done) {
+    done(null, user);
+});
 
 module.exports = passport;

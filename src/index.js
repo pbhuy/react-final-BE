@@ -1,11 +1,11 @@
 require('dotenv').config();
-const cookieParser = require('cookie-parser');
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const passport = require('passport');
 
 const connection = require('./configs/database');
+const passportConfig = require('./configs/passport');
 const router = require('./api/routes');
 const { sendErr } = require('./api/helpers/response');
 const ApiError = require('./api/helpers/error');
@@ -27,7 +27,6 @@ app.use(cors(corsOptions));
 // json parser
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cookieParser());
 app.use(passport.initialize());
 
 // logger

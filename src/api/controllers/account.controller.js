@@ -6,14 +6,9 @@ const ApiError = require('../helpers/error');
 const { sendEmailRegister, sendEmailReset } = require('../helpers/email');
 const cloudinary = require('../../configs/cloudinary');
 const { sendRes, sendErr } = require('../helpers/response');
-const {
-    accessToken,
-    activationToken,
-    refreshToken
-} = require('../helpers/token');
+const { accessToken, activationToken } = require('../helpers/token');
 
 const saltRounds = 10;
-const baseURL = 'http://localhost:3000';
 module.exports = {
     register: async (req, res, next) => {
         try {
@@ -36,7 +31,7 @@ module.exports = {
             };
             // create activation token
             const activation_token = activationToken(account);
-            const url = `${baseURL}/auth/active/${activation_token}`;
+            const url = `${process.env.CLIENT_URL}/auth/active/${activation_token}`;
             sendEmailRegister(email, url, 'Verify your email');
             sendRes(res, 200, undefined, 'Welcome! Please check your email');
         } catch (error) {
@@ -83,7 +78,7 @@ module.exports = {
         try {
             const { email, password } = req.body;
             // check if email found
-            const account = await Account.findOne({ email });
+            const account = await Account.findOne({ email }).lean();
             if (!account)
                 return sendErr(res, new ApiError(400, 'Email not found'));
             // check if password is verified
@@ -93,67 +88,50 @@ module.exports = {
                     res,
                     new ApiError(401, 'Email or password is incorrect')
                 );
-            const refresh_token = refreshToken({
-                _id: account._id,
-                role: account.role
-            });
             const access_token = accessToken({
                 _id: account._id,
                 role: account.role
             });
-            sendRes(
-                res,
-                200,
-                { refresh_token, access_token },
-                'Login successfully'
-            );
+            account.access_token = access_token;
+            sendRes(res, 200, account, 'Login successfully');
         } catch (error) {
             next(error);
         }
     },
     googleLogin: async (req, res, next) => {
-        let refresh_token, access_token;
+        let access_token, account, new_account;
         try {
-            const email = req.profile.emails[0].value;
-            const foundAccount = await Account.findOne({ email });
-            const name = req.profile.displayName;
+            if (!req.user) {
+                return sendErr(res, new ApiError(403, 'Access denied!'));
+            }
+            const email = req.user.emails[0].value;
+            const foundAccount = await Account.findOne({ email }).lean();
+            const name = req.user.displayName;
             const password = email + process.env.GOOGLE_AUTH_CLIENT_ID;
             const salt = await bcrypt.genSalt(saltRounds);
             const hashedPassword = await bcrypt.hash(password, salt);
-            const avatar = req.profile.photos[0].value;
-            let account = { name, email, password: hashedPassword };
+            const avatar = req.user.photos[0].value;
+            account = { name, email, password: hashedPassword, avatar };
             // register new account
             if (!foundAccount) {
-                const new_account = new Account({
-                    ...account,
-                    avatar
-                });
+                new_account = new Account(account);
                 await new_account.save();
-                refresh_token = refreshToken({
-                    _id: new_account._id,
-                    role: new_account.role
-                });
                 access_token = accessToken({
                     _id: new_account._id,
                     role: new_account.role
                 });
+                new_account.toObject();
+                new_account.access_token = access_token;
+                return sendRes(res, 200, new_account, 'Login successfully');
             } else {
                 // login with exist account
-                refresh_token = refreshToken({
-                    _id: foundAccount._id,
-                    role: foundAccount.role
-                });
                 access_token = accessToken({
                     _id: foundAccount._id,
                     role: foundAccount.role
                 });
+                foundAccount.access_token = access_token;
+                return sendRes(res, 200, foundAccount, 'Login successfully');
             }
-            sendRes(
-                res,
-                200,
-                { refresh_token, access_token },
-                'Login successfully'
-            );
         } catch (error) {
             next(error);
         }
@@ -204,7 +182,7 @@ module.exports = {
                 role: account.role
             });
             // send email
-            const url = `${baseURL}/auth/reset-password/${access_token}`;
+            const url = `${process.env.CLIENT_URL}/auth/reset-password/${access_token}`;
             sendEmailReset(email, url, 'Reset your password', account.name);
             sendRes(
                 res,
@@ -265,16 +243,6 @@ module.exports = {
                 }
             ).select('-password');
             sendRes(res, 200, account, 'Update profile successfully');
-        } catch (error) {
-            next(error);
-        }
-    },
-    logout: (req, res, next) => {
-        try {
-            res.clearCookie('_apprftoken', {
-                path: '/api/accounts/auth/access'
-            });
-            sendRes(res, 200, undefined, 'Log out successfully');
         } catch (error) {
             next(error);
         }

@@ -29,8 +29,8 @@ const accountSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ['user', 'admin'],
-            default: 'user'
+            enum: ['student', 'teacher'],
+            default: 'student'
         }
     },
     { timestamps: true }

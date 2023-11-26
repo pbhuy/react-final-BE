@@ -1,3 +1,4 @@
+require('dotenv').config();
 const accountController = require('../controllers/account.controller');
 const {
     authenticateJWT,
@@ -6,6 +7,8 @@ const {
 } = require('../middlewares/auth');
 const passport = require('passport');
 const uploader = require('../middlewares/uploader');
+const { sendErr } = require('../helpers/response');
+const ApiError = require('../helpers/error');
 
 const accountRoute = require('express').Router();
 
@@ -14,14 +17,21 @@ accountRoute.post('/auth/activation', accountController.activation);
 accountRoute.post('/auth/login', accountController.login);
 
 /* Google Auth */
+accountRoute.get('/auth/login/failed', (req, res) => {
+    return sendErr(res, new ApiError(401, 'Unauthorized'));
+});
+accountRoute.get('/auth/login/success', accountController.googleLogin);
 accountRoute.get(
     '/auth/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 accountRoute.get(
     '/auth/google/callback',
-    authGoogle,
-    accountController.googleLogin
+    passport.authenticate('google', {
+        failureRedirect: '/auth/login/failed',
+        successRedirect: process.env.CLIENT_URL,
+        session: false
+    })
 );
 /* Facebook Auth */
 accountRoute.get(
