@@ -2,13 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const passportConfig = require('./configs/passport');
 const passport = require('passport');
 
 const connection = require('./configs/database');
-const passportConfig = require('./configs/passport');
 const router = require('./api/routes');
 const { sendErr } = require('./api/helpers/response');
 const ApiError = require('./api/helpers/error');
+const session = require('express-session');
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -16,18 +17,27 @@ const port = process.env.PORT || 8080;
 // connect to mongodb
 connection();
 
-// cors
-const corsOptions = {
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true
-};
-app.use(cors(corsOptions));
+app.use(
+    session({
+        secret: 'keyboard cat',
+        resave: false,
+        saveUninitialized: true
+    })
+);
 
 // json parser
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(passport.initialize());
+app.use(passport.session());
+
+// cors
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true
+};
+app.use(cors(corsOptions));
 
 // logger
 app.use(morgan('dev'));
