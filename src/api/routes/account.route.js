@@ -35,8 +35,10 @@ accountRoute.get(
 );
 accountRoute.get(
     '/auth/facebook/callback',
-    authFacebook,
-    accountController.facebookLogin
+    passport.authenticate('facebook', {
+        successRedirect: process.env.CLIENT_URL,
+        failureRedirect: '/auth/login/failed'
+    })
 );
 
 accountRoute.post('/auth/refresh', accountController.refresh);

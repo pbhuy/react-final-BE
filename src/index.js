@@ -43,7 +43,21 @@ app.use(cors(corsOptions));
 app.use(morgan('dev'));
 
 app.get('/', (req, res) => {
-    res.send('<h1 style="text-align: center">Welcome React Final API</h1>');
+    res.send(`<!DOCTYPE html>
+    <html lang="en">
+    
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <meta name="google-site-verification" content="WLfomxjNdO4j_lmqWa86FxURWBMiDQus3Fz8LBR1vaI" />
+    </head>
+    
+    <body>
+        <h1 style="text-align: center">Welcome React Final API</h1>
+    </body>
+    
+    </html>`);
 });
 
 // routes
