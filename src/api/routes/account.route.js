@@ -1,10 +1,6 @@
 require('dotenv').config();
 const accountController = require('../controllers/account.controller');
-const {
-    authenticateJWT,
-    authFacebook,
-    authGoogle
-} = require('../middlewares/auth');
+const { authenticateJWT, authFacebook } = require('../middlewares/auth');
 const passport = require('passport');
 const uploader = require('../middlewares/uploader');
 const { sendErr } = require('../helpers/response');
@@ -28,9 +24,8 @@ accountRoute.get(
 accountRoute.get(
     '/auth/google/callback',
     passport.authenticate('google', {
-        failureRedirect: '/auth/login/failed',
         successRedirect: process.env.CLIENT_URL,
-        session: false
+        failureRedirect: '/auth/login/failed'
     })
 );
 /* Facebook Auth */
@@ -40,8 +35,10 @@ accountRoute.get(
 );
 accountRoute.get(
     '/auth/facebook/callback',
-    authFacebook,
-    accountController.facebookLogin
+    passport.authenticate('facebook', {
+        successRedirect: process.env.CLIENT_URL,
+        failureRedirect: '/auth/login/failed'
+    })
 );
 
 accountRoute.post('/auth/refresh', accountController.refresh);

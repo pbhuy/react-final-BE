@@ -1,8 +1,8 @@
 require('dotenv').config();
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
-const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
-const { Strategy: FacebookStrategy } = require('passport-facebook');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 // JWT Strategy
 const jwtOptions = {
