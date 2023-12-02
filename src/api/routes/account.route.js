@@ -16,7 +16,7 @@ accountRoute.post('/auth/login', accountController.login);
 accountRoute.get('/auth/login/failed', (req, res) => {
     return sendErr(res, new ApiError(401, 'Unauthorized'));
 });
-accountRoute.get('/auth/login/success', accountController.googleLogin);
+accountRoute.get('/auth/login/google/success', accountController.googleLogin);
 accountRoute.get(
     '/auth/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
@@ -29,6 +29,10 @@ accountRoute.get(
     })
 );
 /* Facebook Auth */
+accountRoute.get(
+    '/auth/login/facebook/success',
+    accountController.facebookLogin
+);
 accountRoute.get(
     '/auth/facebook',
     passport.authenticate('facebook', { scope: ['public_profile', 'email'] })

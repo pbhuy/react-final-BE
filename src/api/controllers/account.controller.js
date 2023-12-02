@@ -59,9 +59,7 @@ module.exports = {
                     new ApiError(400, 'name, email or password is required')
                 );
             // check account
-            const foundAccount = await Account.findOne({
-                email: account.email
-            });
+            const foundAccount = await Account.findOne({ email });
             if (foundAccount)
                 return sendErr(
                     res,
@@ -137,9 +135,39 @@ module.exports = {
         }
     },
     facebookLogin: async (req, res, next) => {
+        let access_token, account, new_account;
         try {
-            console.log('controller auth facebook');
-            console.log('user', req.data);
+            if (!req.user) {
+                return sendErr(res, new ApiError(403, 'Access denied!'));
+            }
+            const email = req.user.emails[0].value || '';
+            const foundAccount = await Account.findOne({ email }).lean();
+            const name = req.user.displayName;
+            const password = email + process.env.FACEBOOK_CLIENT_ID;
+            const salt = await bcrypt.genSalt(saltRounds);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            const avatar = req.user.photos[0].value || undefined;
+            account = { name, email, password: hashedPassword, avatar };
+            // register new account
+            if (!foundAccount) {
+                new_account = new Account(account);
+                await new_account.save();
+                access_token = accessToken({
+                    _id: new_account._id,
+                    role: new_account.role
+                });
+                new_account.toObject();
+                new_account.access_token = access_token;
+                return sendRes(res, 200, new_account, 'Login successfully');
+            } else {
+                // login with exist account
+                access_token = accessToken({
+                    _id: foundAccount._id,
+                    role: foundAccount.role
+                });
+                foundAccount.access_token = access_token;
+                return sendRes(res, 200, foundAccount, 'Login successfully');
+            }
         } catch (error) {
             next(error);
         }

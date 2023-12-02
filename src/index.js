@@ -33,7 +33,7 @@ app.use(passport.session());
 
 // cors
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://react-final-jade.vercel.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 };
