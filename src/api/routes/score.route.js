@@ -50,7 +50,7 @@ scoreRoute.post("/mock/add-grade-composition", (req, res) => {
 
 // Remove a grade composition
 scoreRoute.post("/mock/remove-grade-composition", (req, res) => {
-  const { subjectId, teacherId, semester, scoreTypeId, percentage } = req.body;
+  const { subjectId, teacherId, semester, scoreTypeId } = req.body;
   sendRes(
     res,
     200,
@@ -67,22 +67,30 @@ scoreRoute.post("/mock/remove-grade-composition", (req, res) => {
 // Update a grade composition (name, grade scale)
 // Mark a grade composition as finalized
 scoreRoute.post("/mock/update-grade-composition", (req, res) => {
-  const { subjectId, teacherId, semester, scoreTypeId, isPublish } = req.body;
+  const {
+    subjectId,
+    teacherId,
+    semesterId,
+    scoreTypeId,
+    newScoreTypeName,
+    isPublish,
+  } = req.body;
   sendRes(
     res,
     200,
     mockData.updateScoreStructure({
       subjectId,
       teacherId,
-      semester,
+      semesterId,
       scoreTypeId,
       isPublish,
+      newScoreTypeName,
     })
   );
 });
 
 // Class owner uploads a csv/xlsx file with student list (StudentId, Full name)
-scoreRoute.get("/mock/add-students", (req, res) => {
+scoreRoute.post("/mock/add-students", (req, res) => {
   // @todo: handle xls file here and add to database
   sendRes(res, 200);
 });
@@ -150,7 +158,7 @@ scoreRoute.get("/mock/comment-review", (req, res) => {
 });
 
 // Mark the final decision for a student review with an updated grade
-scoreRoute.get("/mock/update-score", (req, res) => {
+scoreRoute.post("/mock/update-score", (req, res) => {
   const {
     studentId,
     teacherId,
@@ -158,7 +166,7 @@ scoreRoute.get("/mock/update-score", (req, res) => {
     subjectId,
     scoreTypeId,
     scoreValue,
-  } = req.query;
+  } = req.body;
   // @todo: handle xls file here and add to database
   sendRes(
     res,
