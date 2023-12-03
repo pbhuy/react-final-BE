@@ -31,7 +31,7 @@ module.exports = {
             };
             // create activation token
             const activation_token = activationToken(account);
-            const url = `${process.env.CLIENT_URL}/auth/active/${activation_token}`;
+            const url = `${process.env.FE_CONFIRM_REGISTER_URL}?token=${activation_token}`;
             sendEmailRegister(email, url, 'Verify your email');
             sendRes(res, 200, undefined, 'Welcome! Please check your email');
         } catch (error) {
@@ -210,7 +210,7 @@ module.exports = {
                 role: account.role
             });
             // send email
-            const url = `${process.env.CLIENT_URL}/auth/reset-password/${access_token}`;
+            const url = `${process.env.FE_CONFIRM_FORGOT_URL}?token=${access_token}`;
             sendEmailReset(email, url, 'Reset your password', account.name);
             sendRes(
                 res,

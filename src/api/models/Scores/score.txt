@@ -1,0 +1,77 @@
+Model Student
+- id
+- name
+
+Model subject
+- subjectId
+- teacherId
+- semester: Semester
+- scores: Score[]
+- structure: ScoreStructure
+- isFinished: boolean
+
+Model Semester
+- id
+- name
+	
+Model ScoreType
+- scoreId
+- scoreName (mieng, 15p, 1 tiet, giua ki, cuoi ki)
+
+Model Score
+- studentId
+- subjectId
+- semester: Semester
+- teacherId
+- scoreType
+- score
+
+Model ScoreStructure
+- subjectId
+- teacherId
+- semester: Semester
+- scoreTypeId
+- percentage
+
+
+Model ScoreRequest
+- id
+- score: Score
+- isAccepted: false
+- comments: Comment[]
+
+Model Comment
+- id
+- datetime
+- comment
+
+
+Utils:
+- get semester:
+	-> GET /semester
+	-> return all semester data
+
+- get ScoreType:
+	-> GET /scoretypes
+	-> return all ScoreType data
+
+- show all subjects for teacher:
+	-> GET /subjects?teacherid=...&semester=....
+	
+Flow:
+
+- Show current grade structure:
+	-> POST /grade-structure?
+	-> body: subjectId,teacherId,semester
+
+- Add a grade composition with a name and grade scale
+	-> POST /add-grade-composition
+	-> body: subjectId,teacherId,semester,scoretype(id and percent)
+	
+- Remove a grade composition
+	-> POST /remove-grade-composition
+	-> body: subjectId,teacherId,semester,scoretype(id and percent)
+	
+- Update a grade composition (name, grade scale)
+	-> POST /update-grade-composition
+	-> body: subjectId,teacherId,semester,scoretype(id and percent)
