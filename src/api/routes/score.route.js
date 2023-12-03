@@ -143,8 +143,8 @@ scoreRoute.get("/mock/review-requested-detail", (req, res) => {
 });
 
 // Comment on a student review
-scoreRoute.get("/mock/comment-review", (req, res) => {
-  const { userId, reviewRequestedId, content } = req.query;
+scoreRoute.post("/mock/comment-review", (req, res) => {
+  const { userId, reviewRequestedId, content } = req.body;
   // @todo: handle xls file here and add to database
   sendRes(
     res,
