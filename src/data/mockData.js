@@ -225,10 +225,7 @@ module.exports = MockData = {
   },
 
   commentReview: (params) => {
-    return {
-      requestDetail: scoresRequested[0],
-      comments: comments,
-    };
+    return comments;
   },
 
   updateScore: (params) =>{

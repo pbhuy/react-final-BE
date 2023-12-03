@@ -14,9 +14,9 @@ scoreRoute.get("/mock/scoretypes", (req, res) => {
 
 scoreRoute.get("/mock/subjects", (req, res) => {
   const { teacherId, semesterId } = req.query;
-  if (!teacherId || !semesterId) {
-    return sendErr(res, { status: 500, message: "Missing required params" });
-  }
+  // if (!teacherId || !semesterId) {
+  //   return sendErr(res, { status: 500, message: "Missing required params" });
+  // }
   return sendRes(res, 200, mockData.getSubjects({ teacherId, semesterId }));
 });
 
@@ -59,7 +59,6 @@ scoreRoute.post("/mock/remove-grade-composition", (req, res) => {
       teacherId,
       semester,
       scoreTypeId,
-      updateScoreStructure,
     })
   );
 });
