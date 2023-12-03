@@ -240,10 +240,12 @@ module.exports = {
     },
     profile: async (req, res, next) => {
         try {
-            const account_id = req._id;
-            const account_info = await Account.findById(account_id).select(
-                '-password'
-            );
+            const { id } = req.params;
+            if (!id)
+                return sendErr(res, new ApiError(400, 'Invalid account id'));
+            const account_info = await Account.findById(id).select('-password');
+            if (!account_info)
+                return sendErr(res, new ApiError(400, 'Account not found'));
             sendRes(res, 200, account_info);
         } catch (error) {
             next(error);
