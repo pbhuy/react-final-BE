@@ -128,3 +128,19 @@ P/s
 - `POST /comment-review`
   - Comment on a student review
   - `const { userId, reviewRequestedId, content } = req.body`
+
+## Classroom Management endpoints:
+
+- GET /class?id={classId}
+  -- get information of a class
+
+- POST /class/create
+  -- create a class
+  -- body: { name, description }
+
+- POST /class/add
+  -- add teacher/student to a class
+  -- body { teacherId, classId } or { studentId, classId }
+
+- GET /classes?page={page}&limit={limit}
+  -- get all classes (only return id, name and description)
