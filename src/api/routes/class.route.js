@@ -1,11 +1,17 @@
-const { sendRes } = require("../helpers/response");
+const classroomController = require("../controllers/classroom.controller");
+const { sendRes, sendErr } = require("../helpers/response");
 
 const classRoute = require("express").Router();
 
+const logger = (...content) => {
+  console.log("[CLASS ROUTE] " + content);
+};
+
 // utils API
 
-classRoute.get("/test", (req, res) => {
-  sendRes(res, 200, "hello");
-});
+// @todo: teacher route restricted
+classRoute.get("/", classroomController.getClass);
+classRoute.post("/create", classroomController.createClass);
+classRoute.post("/add", classroomController.addMember);
 
 module.exports = classRoute;
