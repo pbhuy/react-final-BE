@@ -1,12 +1,15 @@
-const { paginate } = require("../helpers/handler");
-const { sendRes, sendErr } = require("../helpers/response");
-const ClassRoom = require("../models/Classroom/classroom.model");
-const StudentClass = require("../models/Classroom/studentclass.model");
-const TeacherClass = require("../models/Classroom/teacherclass.model");
-const Account = require("../models/account.model");
+require('dotenv').config();
+const { paginate } = require('../helpers/handler');
+const { sendRes, sendErr } = require('../helpers/response');
+const ClassRoom = require('../models/Classroom/classroom.model');
+const StudentClass = require('../models/Classroom/studentclass.model');
+const TeacherClass = require('../models/Classroom/teacherclass.model');
+const Account = require('../models/account.model');
+const ApiError = require('../helpers/error');
+const { sendEmailInvite } = require('../helpers/email');
 
 const logger = (...content) => {
-  console.log("[CLASS CONTROLLER] " + content);
+  console.log('[CLASS CONTROLLER] ' + content);
 };
 
 module.exports = {
@@ -14,7 +17,7 @@ module.exports = {
     const { name, description } = req.body;
 
     if (!name || !description) {
-      return sendErr(res, { status: 500, message: "Missing required params" });
+      return sendErr(res, { status: 500, message: 'Missing required params' });
     }
     logger(name, description);
 
@@ -28,10 +31,10 @@ module.exports = {
   },
 
   getClass: async (req, res, next) => {
-    logger("getClass");
+    logger('getClass');
     const { id } = req.query;
     if (!id) {
-      return sendErr(res, { status: 500, message: "Missing required params" });
+      return sendErr(res, { status: 500, message: 'Missing required params' });
     }
     logger(id);
 
@@ -39,7 +42,7 @@ module.exports = {
       const validClass = await ClassRoom.findById(id);
 
       if (!validClass) {
-        return sendErr(res, { status: 500, message: "Class not found" });
+        return sendErr(res, { status: 500, message: 'Class not found' });
       }
 
       const studentsInClass = await StudentClass.find({ classId: id });
@@ -65,7 +68,7 @@ module.exports = {
       const classes = await ClassRoom.find({});
       logger(classes);
       if (!classes) {
-        return sendErr(res, { status: 500, message: "Classes not found" });
+        return sendErr(res, { status: 500, message: 'Classes not found' });
       }
       logger(page, limit);
       return sendRes(
@@ -83,7 +86,7 @@ module.exports = {
     const { teacherId, studentId, classId } = req.body;
 
     if ((!teacherId && !studentId) || !classId) {
-      return sendErr(res, { status: 500, message: "Missing required params" });
+      return sendErr(res, { status: 500, message: 'Missing required params' });
     }
 
     if (teacherId) {
@@ -91,7 +94,7 @@ module.exports = {
       if (foundTeacher) {
         return sendErr(res, {
           status: 500,
-          message: "Teacher already in class",
+          message: 'Teacher already in class'
         });
       }
       const createdTeacher = new TeacherClass({ teacherId, classId });
@@ -103,7 +106,7 @@ module.exports = {
       if (foundStudent) {
         return sendErr(res, {
           status: 500,
-          message: "Student already in class",
+          message: 'Student already in class'
         });
       }
 
@@ -112,4 +115,45 @@ module.exports = {
       return sendRes(res, 200, createdStudent);
     }
   },
+  inviteMember: async (req, res, next) => {
+    const { classId, teacherEmails, studentEmails } = req.body;
+    let accounts = [];
+    try {
+      // check fields
+      if (!classId || !teacherEmails || !studentEmails) {
+        return sendErr(res, new ApiError(400, 'Missing fields'));
+      }
+      // check emails list
+      if (teacherEmails.length === 0 && studentEmails.length === 0)
+        return sendErr(
+          res,
+          new ApiError(
+            400,
+            'Please provide at least one teacher or one student email.'
+          )
+        );
+      // check class exist
+      const foundClass = await ClassRoom.findById(classId);
+      if (!foundClass)
+        return sendErr(res, new ApiError(404, 'Class not found'));
+      const emails = [...teacherEmails, ...studentEmails];
+      for (const email of emails) {
+        const account = await Account.findOne({ email: email }).lean();
+        accounts.push(account);
+      }
+      const url = `${process.env.CLIENT_URL}class/add?classId=${classId}`;
+      accounts.forEach((account) => {
+        sendEmailInvite(
+          account.email,
+          url,
+          'Join Class',
+          account.name,
+          foundClass.name
+        );
+      });
+      sendRes(res, 200, undefined, 'Invitations sent successfully.');
+    } catch (error) {
+      next(error);
+    }
+  }
 };
