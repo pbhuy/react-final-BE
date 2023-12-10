@@ -36,15 +36,15 @@ const authFacebook = (req, res, next) => {
     })(req, res, next);
 };
 
-const authorizeUserAccess = (req, res, next) => {
-    if (req.role === 'user') {
+const authorizeStudent = (req, res, next) => {
+    if (req.role === 'student') {
         return next();
     }
     return sendErr(res, new ApiError(403, 'Access denied!'));
 };
 
-const adminAccessOnly = (req, res, next) => {
-    if (req.role === 'admin') {
+const authorizeTeacher = (req, res, next) => {
+    if (req.role === 'teacher') {
         return next();
     }
     return sendErr(res, new ApiError(403, 'Access denied!'));
@@ -52,7 +52,7 @@ const adminAccessOnly = (req, res, next) => {
 
 module.exports = {
     authenticateJWT,
-    authorizeUserAccess,
-    adminAccessOnly,
+    authorizeStudent,
+    authorizeTeacher,
     authFacebook
 };
