@@ -151,13 +151,19 @@ module.exports = {
     }
   },
   inviteMember: async (req, res, next) => {
+    logger("inviteMember");
     const { classId, teacherEmails, studentEmails } = req.body;
     let accounts = [];
+    let newTeachers = [];
+    let newStudents = [];
     try {
       // check fields
       if (!classId || !teacherEmails || !studentEmails) {
         return sendErr(res, new ApiError(400, "Missing fields"));
       }
+
+      console.log(req.body);
+
       // check emails list
       if (teacherEmails.length === 0 && studentEmails.length === 0)
         return sendErr(
@@ -171,11 +177,31 @@ module.exports = {
       const foundClass = await ClassRoom.findById(classId);
       if (!foundClass)
         return sendErr(res, new ApiError(404, "Class not found"));
-      const emails = [...teacherEmails, ...studentEmails];
-      for (const email of emails) {
-        const account = await Account.findOne({ email: email }).lean();
-        accounts.push(account);
+
+      for (const email of teacherEmails) {
+        const account = await Account.findOne({ email }).lean();
+        if (account) {
+          logger("case if");
+          accounts.push(account);
+        } else {
+          logger("case else");
+
+          newTeachers.push(email);
+        }
       }
+
+      for (const email of studentEmails) {
+        const account = await Account.findOne({ email }).lean();
+        if (account) {
+          logger("case if");
+          accounts.push(account);
+        } else {
+          logger("case else");
+
+          newStudents.push(email);
+        }
+      }
+      console.log("account ", accounts);
       const url = `${process.env.CLIENT_URL}class/add?classId=${classId}`;
       accounts.forEach((account) => {
         sendEmailInvite(
@@ -186,6 +212,31 @@ module.exports = {
           foundClass.name
         );
       });
+      console.log("accounts ", accounts);
+      console.log(newTeachers, newStudents);
+
+      const newTeacherUrl = `${process.env.CLIENT_URL}register?r=class/add?classId=${classId}&cbRole=teacher`;
+      const newStudentUrl = `${process.env.CLIENT_URL}register?r=class/add?classId=${classId}&cbRole=student`;
+      newTeachers.forEach((email) => {
+        sendEmailInvite(
+          email,
+          newTeacherUrl,
+          "Join Class",
+          email,
+          foundClass.name
+        );
+      });
+
+      newStudents.forEach((email) => {
+        sendEmailInvite(
+          email,
+          newStudentUrl,
+          "Join Class",
+          email,
+          foundClass.name
+        );
+      });
+
       sendRes(res, 200, undefined, "Invitations sent successfully.");
     } catch (error) {
       next(error);
