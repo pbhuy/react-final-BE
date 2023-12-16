@@ -6,26 +6,24 @@ const scoreStructureSchema = new Schema(
     {
         teacherId: {
             type: String,
-            required: true
+            default: '',
         },
         subjectId: {
             type: String,
-            required: true
+            default: '',
         },
         scoreTypeId: {
-            type: Schema.Types.ObjectId,
-            ref: 'ScoreType',
-            required: true
+            type: String,
+            default: '',
         },
         semester: {
-            type: Schema.Types.ObjectId,
-            ref: 'Semester',
-            required: true
+            type: String,
+            default: '',
         },
         percentage: {
             type: Number,
-            required: true
-        }
+            default: 0.0,
+        },
     },
     { timestamps: true }
 );

@@ -4,6 +4,7 @@ Model Student
 
 Model subject
 - subjectId
+- subjectName
 - teacherId
 - semester: Semester
 - scores: Score[]
