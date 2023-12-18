@@ -8,6 +8,7 @@ const Account = require("../models/account.model");
 const ApiError = require("../helpers/error");
 const { sendEmailInvite } = require("../helpers/email");
 const { generateInvitationCode } = require("../helpers/invitaioncode");
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const logger = (...content) => {
   console.log("[CLASS CONTROLLER] " + content);
@@ -68,19 +69,55 @@ module.exports = {
   },
 
   getClasses: async (req, res, next) => {
-    const { page = 1, limit = 20 } = req.query;
+    const { page = 1, limit = 20, userId } = req.query;
+
     try {
-      const classes = await ClassRoom.find({});
-      logger(classes);
-      if (!classes) {
-        return sendErr(res, { status: 500, message: "Classes not found" });
+      if (userId) {
+        const account = await Account.findById(userId);
+
+        const teachers = await TeacherClass.find({ teacherId: account.id });
+        const students = await StudentClass.find({ studentId: account.id });
+        // logger(teachers, students);
+
+        let classIds = [];
+
+        teachers.forEach((teacher) => {
+          if (!classIds.includes(teacher.classId)) {
+            classIds.push(teacher.classId);
+          }
+        });
+
+        students.forEach((student) => {
+          if (!classIds.includes(student.classId)) {
+            classIds.push(student.classId);
+          }
+        });
+
+        classIds = classIds
+          .filter((id) => ObjectId.isValid(id))
+          .filter((c) => c);
+
+        const classes = await ClassRoom.find({ _id: { $in: classIds } });
+        logger(classes);
+
+        return sendRes(
+          res,
+          200,
+          paginate({ data: classes, page: +page, limit: +limit })
+        );
+      } else {
+        const classes = await ClassRoom.find({});
+        logger(classes);
+        if (!classes) {
+          return sendErr(res, { status: 500, message: "Classes not found" });
+        }
+        logger(page, limit);
+        return sendRes(
+          res,
+          200,
+          paginate({ data: classes, page: +page, limit: +limit })
+        );
       }
-      logger(page, limit);
-      return sendRes(
-        res,
-        200,
-        paginate({ data: classes, page: +page, limit: +limit })
-      );
     } catch (error) {
       next(error);
     }
