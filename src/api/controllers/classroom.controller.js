@@ -1,18 +1,19 @@
-require("dotenv").config();
-const { paginate } = require("../helpers/handler");
-const { sendRes, sendErr } = require("../helpers/response");
-const ClassRoom = require("../models/Classroom/classroom.model");
-const StudentClass = require("../models/Classroom/studentclass.model");
-const TeacherClass = require("../models/Classroom/teacherclass.model");
-const Account = require("../models/account.model");
-const ApiError = require("../helpers/error");
-const { sendEmailInvite } = require("../helpers/email");
-const { generateInvitationCode } = require("../helpers/invitaioncode");
-const ObjectId = require("mongoose").Types.ObjectId;
+require('dotenv').config();
+const { paginate } = require('../helpers/handler');
+const { sendRes, sendErr } = require('../helpers/response');
+const ClassRoom = require('../models/Classroom/classroom.model');
+const StudentClass = require('../models/Classroom/studentclass.model');
+const TeacherClass = require('../models/Classroom/teacherclass.model');
+const Account = require('../models/account.model');
+const ApiError = require('../helpers/error');
+const { sendEmailInvite } = require('../helpers/email');
+const { generateInvitationCode } = require('../helpers/invitaioncode');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 const logger = (...content) => {
-  console.log("[CLASS CONTROLLER] " + content);
+  console.log('[CLASS CONTROLLER] ' + content);
 };
+const { getIO } = require('../services/socket');
 
 module.exports = {
   createClass: async (req, res, next) => {
@@ -21,7 +22,7 @@ module.exports = {
     logger(req.body);
     console.log(req.body);
     if (!name || !description) {
-      return sendErr(res, { status: 500, message: "Missing required params" });
+      return sendErr(res, { status: 500, message: 'Missing required params' });
     }
     logger(name, description);
 
@@ -37,10 +38,12 @@ module.exports = {
   },
 
   getClass: async (req, res, next) => {
-    logger("getClass");
+    const io = getIO();
+
+    logger('getClass');
     const { id } = req.query;
     if (!id) {
-      return sendErr(res, { status: 500, message: "Missing required params" });
+      return sendErr(res, { status: 500, message: 'Missing required params' });
     }
     logger(id);
 
@@ -48,7 +51,7 @@ module.exports = {
       const validClass = await ClassRoom.findById(id);
 
       if (!validClass) {
-        return sendErr(res, { status: 500, message: "Class not found" });
+        return sendErr(res, { status: 500, message: 'Class not found' });
       }
 
       const studentsInClass = await StudentClass.find({ classId: id });
@@ -73,6 +76,9 @@ module.exports = {
 
     try {
       if (userId) {
+        // @todo: implement here
+        // io.to(userId).emit('updated', { message: 'Data has been updated' });
+
         const account = await Account.findById(userId);
 
         const teachers = await TeacherClass.find({ teacherId: account.id });
@@ -103,20 +109,13 @@ module.exports = {
         return sendRes(
           res,
           200,
-          paginate({ data: classes, page: +page, limit: +limit })
+          paginate({ data: classes, page: +page, limit: +limit }),
         );
       } else {
-        const classes = await ClassRoom.find({});
-        logger(classes);
-        if (!classes) {
-          return sendErr(res, { status: 500, message: "Classes not found" });
-        }
-        logger(page, limit);
-        return sendRes(
-          res,
-          200,
-          paginate({ data: classes, page: +page, limit: +limit })
-        );
+        return sendErr(res, {
+          status: 500,
+          message: 'Invalid userId params',
+        });
       }
     } catch (error) {
       next(error);
@@ -128,7 +127,7 @@ module.exports = {
     const { teacherId, studentId, classId, invitationCode } = req.body;
 
     if ((!teacherId && !studentId) || (!classId && !invitationCode)) {
-      return sendErr(res, { status: 500, message: "Missing required params" });
+      return sendErr(res, { status: 500, message: 'Missing required params' });
     }
 
     // find class in db
@@ -142,7 +141,7 @@ module.exports = {
     }
 
     if (!foundClass) {
-      return sendErr(res, { status: 500, message: "Class not found" });
+      return sendErr(res, { status: 500, message: 'Class not found' });
     }
 
     let foundClassId = foundClass._id.toString();
@@ -156,7 +155,7 @@ module.exports = {
       if (foundTeacher) {
         return sendErr(res, {
           status: 500,
-          message: "Teacher already in class",
+          message: 'Teacher already in class',
         });
       }
       // add teacher to class
@@ -175,7 +174,7 @@ module.exports = {
       if (foundStudent) {
         return sendErr(res, {
           status: 500,
-          message: "Student already in class",
+          message: 'Student already in class',
         });
       }
       // add student to class
@@ -188,7 +187,7 @@ module.exports = {
     }
   },
   inviteMember: async (req, res, next) => {
-    logger("inviteMember");
+    logger('inviteMember');
     const { classId, teacherEmails, studentEmails } = req.body;
     let accounts = [];
     let newTeachers = [];
@@ -196,7 +195,7 @@ module.exports = {
     try {
       // check fields
       if (!classId || !teacherEmails || !studentEmails) {
-        return sendErr(res, new ApiError(400, "Missing fields"));
+        return sendErr(res, new ApiError(400, 'Missing fields'));
       }
 
       console.log(req.body);
@@ -207,21 +206,21 @@ module.exports = {
           res,
           new ApiError(
             400,
-            "Please provide at least one teacher or one student email."
-          )
+            'Please provide at least one teacher or one student email.',
+          ),
         );
       // check class exist
       const foundClass = await ClassRoom.findById(classId);
       if (!foundClass)
-        return sendErr(res, new ApiError(404, "Class not found"));
+        return sendErr(res, new ApiError(404, 'Class not found'));
 
       for (const email of teacherEmails) {
         const account = await Account.findOne({ email }).lean();
         if (account) {
-          logger("case if");
+          logger('case if');
           accounts.push(account);
         } else {
-          logger("case else");
+          logger('case else');
 
           newTeachers.push(email);
         }
@@ -230,26 +229,26 @@ module.exports = {
       for (const email of studentEmails) {
         const account = await Account.findOne({ email }).lean();
         if (account) {
-          logger("case if");
+          logger('case if');
           accounts.push(account);
         } else {
-          logger("case else");
+          logger('case else');
 
           newStudents.push(email);
         }
       }
-      console.log("account ", accounts);
+      console.log('account ', accounts);
       const url = `${process.env.CLIENT_URL}class/add?classId=${classId}`;
       accounts.forEach((account) => {
         sendEmailInvite(
           account.email,
           url,
-          "Join Class",
+          'Join Class',
           account.name,
-          foundClass.name
+          foundClass.name,
         );
       });
-      console.log("accounts ", accounts);
+      console.log('accounts ', accounts);
       console.log(newTeachers, newStudents);
 
       const newTeacherUrl = `${process.env.CLIENT_URL}register?r=class/add?classId=${classId}&cbRole=teacher`;
@@ -258,9 +257,9 @@ module.exports = {
         sendEmailInvite(
           email,
           newTeacherUrl,
-          "Join Class",
+          'Join Class',
           email,
-          foundClass.name
+          foundClass.name,
         );
       });
 
@@ -268,13 +267,13 @@ module.exports = {
         sendEmailInvite(
           email,
           newStudentUrl,
-          "Join Class",
+          'Join Class',
           email,
-          foundClass.name
+          foundClass.name,
         );
       });
 
-      sendRes(res, 200, undefined, "Invitations sent successfully.");
+      sendRes(res, 200, undefined, 'Invitations sent successfully.');
     } catch (error) {
       next(error);
     }
