@@ -48,11 +48,11 @@ Model Comment
 
 
 Utils:
-- get semester:
+- get semester: (v)
 	-> GET /semester
 	-> return all semester data
 
-- get ScoreType:
+- get ScoreType: (v)
 	-> GET /scoretypes
 	-> return all ScoreType data
 

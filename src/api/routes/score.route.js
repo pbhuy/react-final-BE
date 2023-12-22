@@ -6,10 +6,13 @@ const scoreController = require('../controllers/score.controller');
 // utils API
 
 scoreRoute.get('/semesters', scoreController.getSemesters); // done
+scoreRoute.post('/semesters', scoreController.createSemester); // done
 
 scoreRoute.get('/scoretypes', scoreController.getScoreTypes); // done
+scoreRoute.post('/scoretypes', scoreController.createScoreType); // done
 
 scoreRoute.get('/subjects', scoreController.getSubjects); // done
+scoreRoute.post('/subjects', scoreController.createSubject); // done
 
 // main API:
 
@@ -19,20 +22,11 @@ scoreRoute.post('/grade-structure', scoreController.getScoreStructure); // done
 // - Add a grade composition with a name and grade scale (only choose in grade structure list)
 scoreRoute.post('/add-grade-composition', scoreController.addScoreStructure); // done
 
-// Remove a grade composition
-scoreRoute.post('/mock/remove-grade-composition', (req, res) => {
-    const { subjectId, teacherId, semester, scoreTypeId } = req.body;
-    sendRes(
-        res,
-        200,
-        mockData.removeScoreStructure({
-            subjectId,
-            teacherId,
-            semester,
-            scoreTypeId,
-        })
-    );
-});
+// Remove a grade composition  // done
+scoreRoute.post(
+    '/remove-grade-composition',
+    scoreController.removeScoreStructure
+);
 
 // Update a grade composition (name, grade scale)
 // Mark a grade composition as finalized

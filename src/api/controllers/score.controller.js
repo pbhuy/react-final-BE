@@ -22,12 +22,32 @@ module.exports = {
             next(error);
         }
     },
+    createSemester: async (req, res, next) => {
+        try {
+            const { name } = req.body;
+            if (!name) return next(new ApiError(404, 'Missing field'));
+            const semester = new Semester({ name });
+            await semester.save();
+            sendRes(res, 201, semester);
+        } catch (error) {
+            next(error);
+        }
+    },
     getScoreTypes: async (req, res, next) => {
         try {
             const scoreTypes = await ScoreType.find();
-            // const scoretype = new ScoreType({ name: 'Final' });
-            // await scoretype.save();
             sendRes(res, 200, scoreTypes);
+        } catch (error) {
+            next(error);
+        }
+    },
+    createScoreType: async (req, res, next) => {
+        try {
+            const { name } = req.body;
+            if (!name) return next(new ApiError(404, 'Missing field'));
+            const scoretype = new ScoreType({ name });
+            await scoretype.save();
+            sendRes(res, 201, scoretype);
         } catch (error) {
             next(error);
         }
@@ -36,6 +56,18 @@ module.exports = {
         try {
             const subjects = await Subject.find();
             sendRes(res, 200, subjects);
+        } catch (error) {
+            next(error);
+        }
+    },
+    createSubject: async (req, res, next) => {
+        try {
+            const { name, teacherId, semesterId } = req.body;
+            if (!name || !teacherId || !semesterId)
+                return next(new ApiError(404, 'Missing field'));
+            const subject = new Subject({ name, teacherId, semesterId });
+            await subject.save();
+            sendRes(res, 201, subject);
         } catch (error) {
             next(error);
         }
@@ -98,9 +130,18 @@ module.exports = {
             next(error);
         }
     },
-    // removeScoreStructure: async (req, res, next) => {
-    //     return res.status(200).json({ message: 'hello' });
-    // },
+    removeScoreStructure: async (req, res, next) => {
+        const { subjectId, teacherId, semester, scoreTypeId } = req.body;
+        if (!subjectId || !teacherId || !semester || !scoreTypeId)
+            return next(new ApiError(404, 'Missing field'));
+        await ScoreStructure.findOneAndDelete({
+            subjectId,
+            teacherId,
+            semester,
+            scoreTypeId,
+        });
+        sendRes(res, 200);
+    },
     // updateScoreStructure: async (req, res, next) => {
     //     return res.status(200).json({ message: 'hello' });
     // },

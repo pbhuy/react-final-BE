@@ -24,6 +24,10 @@ const scoreStructureSchema = new Schema(
             type: Number,
             default: 0.0,
         },
+        isPublish: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );
