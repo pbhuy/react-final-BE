@@ -142,22 +142,81 @@ module.exports = {
         });
         sendRes(res, 200);
     },
-    // updateScoreStructure: async (req, res, next) => {
-    //     return res.status(200).json({ message: 'hello' });
-    // },
+    updateScoreStructure: async (req, res, next) => {
+        try {
+            const {
+                subjectId,
+                teacherId,
+                semesterId,
+                scoreTypeId,
+                percentage,
+                isPublish,
+            } = req.body;
+            console.log({
+                subjectId,
+                teacherId,
+                semesterId,
+                scoreTypeId,
+                percentage,
+                isPublish,
+            });
+            if (!subjectId || !teacherId || !semesterId || !scoreTypeId)
+                return next(new ApiError(404, 'Missing field'));
+            const result = await ScoreStructure.findOneAndUpdate(
+                { subjectId, teacherId, semester: semesterId, scoreTypeId },
+                { percentage, isPublish },
+                { returnDocument: 'after' }
+            );
+            sendRes(res, 200, result);
+        } catch (error) {
+            next(error);
+        }
+    },
     getScores: async (req, res, next) => {
         const { subjectId, teacherId, semesterId } = req.query;
-        const scores = await Score.find().lean();
+        if (!subjectId || !teacherId || !semesterId)
+            return next(new ApiError(404, 'Missing field'));
+        const teacher = Account.findById(teacherId).lean();
+        if (!teacher) return next(new ApiError(404, 'Teacher not found'));
+        const subject = Account.findById(subjectId).lean();
+        if (!subject) return next(new ApiError(404, 'Subject not found'));
+        const semester = Account.findById(semesterId).lean();
+        if (!semester) return next(new ApiError(404, 'Semester not found'));
+        const scores = await Score.find({
+            teacherId,
+            subjectId,
+            semester: semesterId,
+        }).lean();
         sendRes(res, 200, scores);
-        // sendRes(
-        //     res,
-        //     200,
-        //     mockData.getScores({
-        //         subjectId,
-        //         teacherId,
-        //         semesterId,
-        //     })
-        // );
+    },
+    createScore: async (req, res, next) => {
+        const {
+            subjectId,
+            teacherId,
+            semesterId,
+            studentId,
+            scoreTypeId,
+            scoreValue,
+        } = req.body;
+        if (
+            !subjectId ||
+            !teacherId ||
+            !semesterId ||
+            !studentId ||
+            !scoreTypeId ||
+            !scoreValue
+        )
+            return next(new ApiError(404, 'Missing field'));
+        const score = new Score({
+            subjectId,
+            teacherId,
+            semester: semesterId,
+            studentId,
+            scoreTypeId,
+            scoreValue,
+        });
+        await score.save();
+        sendRes(res, 201, score);
     },
     // getScoresRequested: async (req, res, next) => {
     //     return res.status(200).json({ message: 'hello' });
@@ -168,7 +227,35 @@ module.exports = {
     // commentReview: async (req, res, next) => {
     //     return res.status(200).json({ message: 'hello' });
     // },
-    // updateScore: async (req, res, next) => {
-    //     return res.status(200).json({ message: 'hello' });
-    // }
+    updateScore: async (req, res, next) => {
+        const {
+            studentId,
+            teacherId,
+            semesterId,
+            subjectId,
+            scoreTypeId,
+            scoreValue,
+        } = req.body;
+        if (
+            !studentId ||
+            !teacherId ||
+            !semesterId ||
+            !subjectId ||
+            !scoreTypeId ||
+            !scoreValue
+        )
+            return next(new ApiError(404, 'Missing field'));
+        const result = await Score.findOneAndUpdate(
+            {
+                studentId,
+                teacherId,
+                semester: semesterId,
+                subjectId,
+                scoreTypeId,
+            },
+            { scoreValue },
+            { returnDocument: 'after' }
+        );
+        sendRes(res, 200, result);
+    },
 };

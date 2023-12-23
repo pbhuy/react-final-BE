@@ -30,28 +30,10 @@ scoreRoute.post(
 
 // Update a grade composition (name, grade scale)
 // Mark a grade composition as finalized
-scoreRoute.post('/mock/update-grade-composition', (req, res) => {
-    const {
-        subjectId,
-        teacherId,
-        semesterId,
-        scoreTypeId,
-        newScoreTypeName,
-        isPublish,
-    } = req.body;
-    sendRes(
-        res,
-        200,
-        mockData.updateScoreStructure({
-            subjectId,
-            teacherId,
-            semesterId,
-            scoreTypeId,
-            isPublish,
-            newScoreTypeName,
-        })
-    );
-});
+scoreRoute.post(
+    '/update-grade-composition',
+    scoreController.updateScoreStructure // done
+);
 
 // Class owner uploads a csv/xlsx file with student list (StudentId, Full name)
 scoreRoute.post('/mock/add-students', (req, res) => {
@@ -59,9 +41,12 @@ scoreRoute.post('/mock/add-students', (req, res) => {
     sendRes(res, 200);
 });
 
+// extra
+scoreRoute.post('/scores', scoreController.createScore); // done
+
 // Show Students (pre-upload full student list) x Grades board
 // Show total grade column at grade board
-scoreRoute.get('/scores', scoreController.getScores); // doing
+scoreRoute.get('/scores', scoreController.getScores); //
 
 // View list of grade reviews requested by students
 scoreRoute.get('/mock/reviews-requested', (req, res) => {
@@ -110,28 +95,6 @@ scoreRoute.post('/mock/comment-review', (req, res) => {
 });
 
 // Mark the final decision for a student review with an updated grade
-scoreRoute.post('/mock/update-score', (req, res) => {
-    const {
-        studentId,
-        teacherId,
-        semesterId,
-        subjectId,
-        scoreTypeId,
-        scoreValue,
-    } = req.body;
-    // @todo: handle xls file here and add to database
-    sendRes(
-        res,
-        200,
-        mockData.updateScore({
-            studentId,
-            teacherId,
-            semesterId,
-            subjectId,
-            scoreTypeId,
-            scoreValue,
-        })
-    );
-});
+scoreRoute.post('/mock/update-score', scoreController.updateScore);
 
 module.exports = scoreRoute;
