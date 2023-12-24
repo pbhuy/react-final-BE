@@ -5,7 +5,8 @@ module.exports={
     
   },
 
-  getAccounts: (req,res)=>{
-    
+  getAccounts: async (req,res)=>{
+    const accounts = await Account.find({});
+    console.log(accounts); 
   }
 }
