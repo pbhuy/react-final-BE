@@ -144,3 +144,23 @@ P/s
 
 - GET /classes?page={page}&limit={limit}
   -- get all classes (only return id, name and description)
+
+
+## Admin endpoints:
+P/s
+
+- all enpoints below start with "/admin"
+- with error request, will return
+
+  ```{
+  success: false,
+  error: {
+    message: err.message,
+  },
+  }
+  ```
+
+- GET /accounts?type=...
+  -- type: teacher || student
+
+- GET /classes

@@ -9,5 +9,6 @@ router.use("/class", classRoute);
 router.use("/classes", classesRoute);
 router.use("/accounts", accountRoute);
 router.use("/score", scoreRoute);
+router.use("/admin", scoreRoute);
 
 module.exports = router;
