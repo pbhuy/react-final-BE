@@ -36,6 +36,10 @@ const accountSchema = new Schema(
       enum: ['student', 'teacher', 'admin'],
       default: 'student',
     },
+    isLocked: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

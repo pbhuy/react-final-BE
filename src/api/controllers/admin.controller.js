@@ -1,9 +1,9 @@
-const ApiError = require('../helpers/error');
-const { sendRes, sendErr } = require('../helpers/response');
+require('dotenv').config();
 const Account = require('../models/account.model');
 const ClassRoom = require('../models/Classroom/classroom.model');
 
-require('dotenv').config();
+const ApiError = require('../helpers/error');
+const { sendRes, sendErr } = require('../helpers/response');
 
 module.exports = {
   mappingStudent: async (req, res) => {
@@ -22,7 +22,6 @@ module.exports = {
       if (!student) {
         return sendErr(res, new ApiError(400, 'Student not found'));
       }
-
       student.mapCode = mapCode;
       await student.save();
 
@@ -50,7 +49,6 @@ module.exports = {
       .limit(limit);
     return sendRes(res, 200, { page, limit, classes });
   },
-
   getAccounts: async (req, res) => {
     // pagination
     const { page = 1, limit = 10, role = 'student' } = req.query;
@@ -73,5 +71,21 @@ module.exports = {
       .skip(skip)
       .limit(limit);
     return sendRes(res, 200, { page, limit, accounts });
+  },
+  lockAccount: async (req, res) => {
+    const { id } = req.body;
+    if (!id) return sendErr(res, new ApiError(400, 'Missing id'));
+    try {
+      const account = await Account.findById(id);
+      if (!account) {
+        return sendErr(res, new ApiError(400, 'Account not found'));
+      }
+      account.isLocked = true;
+      await account.save();
+
+      return sendRes(res, 200, account);
+    } catch (error) {
+      return sendErr(res, new ApiError(500, error));
+    }
   },
 };
