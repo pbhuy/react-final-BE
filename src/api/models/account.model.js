@@ -6,32 +6,32 @@ const accountSchema = new Schema(
     {
         name: {
             type: String,
-            required: true
+            required: true,
         },
         email: {
             type: String,
             unique: true,
-            required: true
+            required: true,
         },
         password: {
             type: String,
-            required: true
+            required: true,
         },
         phone: {
             type: String,
-            default: ''
+            default: '',
         },
         address: { type: String, default: '' },
         avatar: {
             type: String,
             default:
-                'https://res.cloudinary.com/dqtcvuae8/image/upload/v1700311688/avatar/ttlmi6rg8pu4m7d4ao6o.png'
+                'https://res.cloudinary.com/dqtcvuae8/image/upload/v1700311688/avatar/ttlmi6rg8pu4m7d4ao6o.png',
         },
         role: {
             type: String,
-            enum: ['student', 'teacher'],
-            default: 'student'
-        }
+            enum: ['student', 'teacher', 'admin'],
+            default: 'student',
+        },
     },
     { timestamps: true }
 );

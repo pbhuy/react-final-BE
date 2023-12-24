@@ -51,6 +51,13 @@ const authorizeTeacher = (req, res, next) => {
   return sendErr(res, new ApiError(403, "Access denied!"));
 };
 
+const authorizeAdmin = (req, res, next) => {
+    if (req.role === 'admin') {
+        return next();
+    }
+    return sendErr(res, new ApiError(403, 'Access denied!'));
+};
+
 module.exports = {
   authenticateJWT,
   authorizeStudent,
