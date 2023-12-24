@@ -1,18 +1,23 @@
-require("dotenv").config();
-const express = require("express");
-const morgan = require("morgan");
-const cors = require("cors");
-const passportConfig = require("./configs/passport");
-const passport = require("passport");
+require('dotenv').config();
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
+const passportConfig = require('./configs/passport');
+const passport = require('passport');
 
-const connection = require("./configs/database");
-const router = require("./api/routes");
-const { sendErr } = require("./api/helpers/response");
-const ApiError = require("./api/helpers/error");
-const session = require("express-session");
+const connection = require('./configs/database');
+const router = require('./api/routes');
+const { sendErr } = require('./api/helpers/response');
+const ApiError = require('./api/helpers/error');
+const session = require('express-session');
 
 const app = express();
 const port = process.env.PORT || 8080;
+
+const http = require('http');
+const server = http.createServer(app);
+
+const { configureSocket } = require('./api/services/socket');
 
 // connect to mongodb
 connection();
@@ -29,22 +34,23 @@ connection();
 // cors
 const corsOptions = {
   origin: [
-    "http://localhost:3000",
-    "https://react-final-jade.vercel.app",
+    'http://localhost:3000',
+    'https://react-final-jade.vercel.app',
     // "https://accounts.google.com/o/oauth2/v2/auth",
   ],
   //   origin: "*",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
 };
 app.use(cors(corsOptions));
+// app.use(cors());
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-  })
+  }),
 );
 
 // json parser
@@ -54,9 +60,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // logger
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 
-app.get("/", (req, res) => {
+const io = configureSocket(server);
+
+app.get('/', (req, res) => {
   res.send(`<!DOCTYPE html>
     <html lang="en">
     
@@ -75,15 +83,15 @@ app.get("/", (req, res) => {
 });
 
 // routes
-app.use("/api", router);
+app.use('/api', router);
 
 // handle server errors
 app.use((err, req, res, next) => {
   const status = err.status ? err.status : 500;
-  const message = err.message ? err.message : "Internal Server Error";
+  const message = err.message ? err.message : 'Internal Server Error';
   sendErr(res, new ApiError(status, message));
 });
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
