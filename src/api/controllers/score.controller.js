@@ -33,6 +33,32 @@ module.exports = {
             next(error);
         }
     },
+    updateSemester: async (req, res, next) => {
+        try {
+            const { name } = req.body;
+            const { semesterId } = req.query;
+            if (!name || !semesterId)
+                return next(new ApiError(404, 'Missing field'));
+            const semester = await Semester.findByIdAndUpdate(
+                semesterId,
+                { name },
+                { returnDocument: 'after' }
+            );
+            sendRes(res, 200, semester);
+        } catch (error) {
+            next(error);
+        }
+    },
+    deleteSemester: async (req, res, next) => {
+        try {
+            const { semesterId } = req.query;
+            if (!semesterId) return next(new ApiError(404, 'Missing field'));
+            await Semester.findByIdAndDelete(semesterId);
+            sendRes(res, 204);
+        } catch (error) {
+            next(error);
+        }
+    },
     getScoreTypes: async (req, res, next) => {
         try {
             const scoreTypes = await ScoreType.find();
@@ -45,9 +71,35 @@ module.exports = {
         try {
             const { name } = req.body;
             if (!name) return next(new ApiError(404, 'Missing field'));
-            const scoretype = new ScoreType({ name });
-            await scoretype.save();
-            sendRes(res, 201, scoretype);
+            const scoreType = new ScoreType({ name });
+            await scoreType.save();
+            sendRes(res, 201, scoreType);
+        } catch (error) {
+            next(error);
+        }
+    },
+    updateScoreType: async (req, res, next) => {
+        try {
+            const { name } = req.body;
+            const { scoreTypeId } = req.query;
+            if (!name || !scoreTypeId)
+                return next(new ApiError(404, 'Missing field'));
+            const scoreType = await ScoreType.findByIdAndUpdate(
+                scoreTypeId,
+                { name },
+                { returnDocument: 'after' }
+            );
+            sendRes(res, 200, scoreType);
+        } catch (error) {
+            next(error);
+        }
+    },
+    deleteScoreType: async (req, res, next) => {
+        try {
+            const { scoreTypeId } = req.query;
+            if (!scoreTypeId) return next(new ApiError(404, 'Missing field'));
+            await ScoreType.findByIdAndDelete(scoreTypeId);
+            sendRes(res, 204);
         } catch (error) {
             next(error);
         }

@@ -11,6 +11,11 @@ const classroom = new Schema(
       type: String,
       required: true,
     },
+    invitationCode: {
+      type: String,
+      required: true,
+      default: "",
+    },
   },
   { timestamps: true }
 );

@@ -6,8 +6,8 @@ const semesterSchema = new Schema(
     {
         name: {
             type: String,
-            required: [true, 'Name semester is required']
-        }
+            required: [true, 'Name of semester is required'],
+        },
     },
     { timestamps: true }
 );

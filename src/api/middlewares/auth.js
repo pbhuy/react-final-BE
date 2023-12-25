@@ -8,6 +8,7 @@ const ApiError = require('../helpers/error');
 const authenticateJWT = (req, res, next) => {
     passport.authenticate('jwt', { session: false }, (err, account) => {
         if (err) {
+            console.log(err);
             return sendErr(res, new ApiError(401, 'Unauthorized'));
         }
         if (!account) {

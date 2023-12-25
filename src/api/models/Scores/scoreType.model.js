@@ -6,8 +6,9 @@ const scoreTypeSchema = new Schema(
     {
         name: {
             type: String,
-            required: [true, 'Name score is required']
-        }
+            unique: true,
+            required: [true, 'Name of score type is required'],
+        },
     },
     { timestamps: true }
 );

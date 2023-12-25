@@ -7,9 +7,13 @@ const scoreController = require('../controllers/score.controller');
 
 scoreRoute.get('/semesters', scoreController.getSemesters); // done
 scoreRoute.post('/semesters', scoreController.createSemester); // done
+scoreRoute.post('/update-semesters', scoreController.updateSemester); // done
+scoreRoute.post('/delete-semesters', scoreController.deleteSemester); // done
 
 scoreRoute.get('/scoretypes', scoreController.getScoreTypes); // done
 scoreRoute.post('/scoretypes', scoreController.createScoreType); // done
+scoreRoute.post('/update-scoretypes', scoreController.updateScoreType); // done
+scoreRoute.post('/delete-scoretypes', scoreController.deleteScoreType); // done
 
 scoreRoute.get('/subjects', scoreController.getSubjects); // done
 scoreRoute.post('/subjects', scoreController.createSubject); // done
