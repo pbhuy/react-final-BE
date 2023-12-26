@@ -5,26 +5,18 @@ const { Schema } = mongoose;
 const scoreSchema = new Schema(
     {
         studentId: {
-            type: String,
-            default: '',
+            type: Schema.Types.ObjectId,
+            ref: 'Account',
         },
         teacherId: {
-            type: String,
-            default: '',
+            type: Schema.Types.ObjectId,
+            ref: 'Account',
         },
-        subjectId: {
-            type: String,
-            default: '',
+        typeId: {
+            type: Schema.Types.ObjectId,
+            ref: 'Type',
         },
-        scoreTypeId: {
-            type: String,
-            default: '',
-        },
-        semester: {
-            type: String,
-            default: '',
-        },
-        scoreValue: {
+        value: {
             type: Number,
             default: 0.0,
         },
