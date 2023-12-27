@@ -130,6 +130,20 @@ module.exports = {
             next(error);
         }
     },
+    getScoreByStudentId: async (req, res, next) => {
+        try {
+            const { studentId } = req.query;
+            const scores = await Score.find({ studentId })
+                .populate({
+                    path: 'studentId teacherId typeId',
+                    select: 'name percentage classId',
+                })
+                .lean();
+            sendRes(res, 200, scores);
+        } catch (error) {
+            next(error);
+        }
+    },
     createScore: async (req, res, next) => {
         try {
             const { studentId, teacherId, typeId, value } = req.body;
@@ -171,7 +185,19 @@ module.exports = {
     // Request controllers
     getRequests: async (req, res, next) => {
         try {
-            const requests = await Request.find();
+            const requests = await Request.find()
+                .populate({
+                    path: 'studentId teacherId classId',
+                    select: 'name',
+                })
+                .populate({
+                    path: 'comments',
+                    select: 'content',
+                    populate: {
+                        path: 'accountId',
+                        select: 'name',
+                    },
+                });
             sendRes(res, 200, requests);
         } catch (error) {
             next(error);
@@ -181,7 +207,10 @@ module.exports = {
         try {
             const { requestId } = req.query;
             if (!requestId) return next(new ApiError(404, 'Missing field'));
-            const request = await Request.findById(requestId);
+            const request = await Request.findById(requestId).populate({
+                path: 'studentId teacherId classId',
+                select: 'name',
+            });
             sendRes(res, 200, request);
         } catch (error) {
             next(error);
@@ -190,7 +219,10 @@ module.exports = {
     getRequestsByClassId: async (req, res, next) => {
         try {
             const { classId } = req.query;
-            const requests = await Request.find({ classId });
+            const requests = await Request.find({ classId }).populate({
+                path: 'studentId teacherId classId',
+                select: 'name',
+            });
             sendRes(res, 200, requests);
         } catch (error) {
             next(error);
@@ -200,18 +232,18 @@ module.exports = {
         try {
             const {
                 title,
-                description,
-                scoreId,
-                expectation,
+                explain,
+                actualScore,
+                expectedScore,
                 studentId,
                 teacherId,
                 classId,
             } = req.body;
             const request = new Request({
                 title,
-                description,
-                scoreId,
-                expectation,
+                explain,
+                actualScore,
+                expectedScore,
                 studentId,
                 teacherId,
                 classId,
@@ -226,18 +258,18 @@ module.exports = {
         try {
             const {
                 title,
-                description,
-                scoreId,
-                expectation,
+                explain,
+                actualScore,
+                expectedScore,
                 studentId,
                 teacherId,
                 classId,
             } = req.body;
             const request = new Request({
                 title,
-                description,
-                scoreId,
-                expectation,
+                explain,
+                actualScore,
+                expectedScore,
                 studentId,
                 teacherId,
                 classId,
@@ -252,18 +284,18 @@ module.exports = {
         try {
             const {
                 title,
-                description,
-                scoreId,
-                expectation,
+                explain,
+                actualScore,
+                expectedScore,
                 studentId,
                 teacherId,
                 classId,
             } = req.body;
             const request = new Request({
                 title,
-                description,
-                scoreId,
-                expectation,
+                explain,
+                actualScore,
+                expectedScore,
                 studentId,
                 teacherId,
                 classId,
@@ -299,8 +331,17 @@ module.exports = {
             const { accountId, requestId, content } = req.body;
             if (!accountId || !requestId || !content)
                 return next(new ApiError(404, 'Missing field'));
+
+            // create new comment in request
             const comment = new Comment({ accountId, requestId, content });
             await comment.save();
+
+            // update comments in request
+            await Request.findByIdAndUpdate(
+                requestId,
+                { $push: { comments: comment._id } },
+                { new: true }
+            );
             sendRes(res, 201, comment);
         } catch (error) {
             next(error);

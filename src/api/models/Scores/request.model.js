@@ -5,16 +5,20 @@ const { Schema } = mongoose;
 const requestSchema = new Schema(
     {
         title: {
-            type: Schema.Types.ObjectId,
-            ref: 'Account',
-        },
-        description: {
             type: String,
-            required: [true, 'Content of comment is required'],
+            required: [true, 'Content of explain is required'],
         },
-        expectation: {
+        explain: {
+            type: String,
+            required: [true, 'Content of explain is required'],
+        },
+        actualScore: {
             type: Number,
-            required: [true, 'Content of comment is required'],
+            required: [true, 'Actual score is required'],
+        },
+        expectedScore: {
+            type: Number,
+            required: [true, 'Expected score is required'],
         },
         studentId: {
             type: Schema.Types.ObjectId,

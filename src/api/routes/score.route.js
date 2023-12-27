@@ -18,6 +18,7 @@ scoreRoute.get('/scores', scoreController.getScores); // done
 scoreRoute.get('/scores-final', scoreController.getScoresFinal); // doing
 
 scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done
+scoreRoute.get('/student-scores', scoreController.getScoreByStudentId); // done
 scoreRoute.post('/create-scores', scoreController.createScore); // done
 scoreRoute.post('/update-scores', scoreController.updateScore); // done
 scoreRoute.get('/delete-scores', scoreController.deleteScore); // done
@@ -50,6 +51,7 @@ scoreRoute.get('/scores-final', scoreController.getScoresFinal); // doing
 
 // View list of grade reviews requested by students
 scoreRoute.get('/requests', scoreController.getRequests); // done
+scoreRoute.post('/create-requests', scoreController.createRequest); // done
 scoreRoute.get('/request-details', scoreController.getRequestById); // done
 scoreRoute.get('/class-requests', scoreController.getRequestsByClassId); // done
 
@@ -63,7 +65,7 @@ scoreRoute.get('/comment-request', scoreController.getCommentByRequestId); // do
 // Get comment by id
 scoreRoute.get('/comment', scoreController.getCommentById); // done
 // Comment on a student review
-scoreRoute.post('/comment', scoreController.createComment); // done
+scoreRoute.post('/create-comment', scoreController.createComment); // done
 // Get all comments of the request by request id
 scoreRoute.get('/comment-request', scoreController.getCommentByRequestId); // done
 // Delete comment by id

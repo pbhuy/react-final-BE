@@ -8,10 +8,6 @@ const commentSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Account',
         },
-        requestId: {
-            type: Schema.Types.ObjectId,
-            ref: 'Request',
-        },
         content: {
             type: String,
             required: [true, 'Content of comment is required'],
