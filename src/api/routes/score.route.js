@@ -1,4 +1,3 @@
-const mockData = require('../../data/mockData');
 const { sendRes, sendErr } = require('../helpers/response');
 const scoreRoute = require('express').Router();
 const scoreController = require('../controllers/score.controller');
@@ -6,22 +5,21 @@ const scoreController = require('../controllers/score.controller');
 // utils API
 
 // Score Type
-scoreRoute.get('/types', scoreController.getTypes); // done
-scoreRoute.get('/class-type', scoreController.getTypeByClassId); // done
-scoreRoute.post('/create-type', scoreController.createType); // done
-scoreRoute.post('/update-type', scoreController.updateType); // done
-scoreRoute.post('/delete-type', scoreController.deleteType); // done
+scoreRoute.get('/types', scoreController.getTypes); // done - test ok
+scoreRoute.get('/class-types', scoreController.getTypeByClassId); // done - test ok
+scoreRoute.post('/create-type', scoreController.createType); // done - test ok
+scoreRoute.post('/update-type', scoreController.updateType); // done - test ok
+scoreRoute.post('/delete-type', scoreController.deleteType); // done - test ok
 
 // Score
 
-scoreRoute.get('/scores-final', scoreController.getScoresFinal); // doing
-
-scoreRoute.get('/scores', scoreController.getScores); // done
-scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done
-scoreRoute.get('/student-scores', scoreController.getScoreByStudentId); // done
-scoreRoute.post('/create-score', scoreController.createScore); // done
-scoreRoute.post('/update-score', scoreController.updateScore); // done
-scoreRoute.post('/delete-score', scoreController.deleteScore); // done
+scoreRoute.get('/scores-final', scoreController.getScoresFinal); // done
+scoreRoute.get('/scores', scoreController.getScores); // done - test ok
+scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done - test ok
+scoreRoute.get('/student-scores', scoreController.getScoreByStudentId); // done - test ok
+scoreRoute.post('/create-score', scoreController.createScore); // done - test ok
+scoreRoute.post('/update-score', scoreController.updateScore); // done - test ok
+scoreRoute.post('/delete-score', scoreController.deleteScore); // done - test ok
 
 // main API:
 
@@ -47,7 +45,7 @@ scoreRoute.post('/mock/add-students', (req, res) => {
 
 // Show Students (pre-upload full student list) x Grades board
 // Show total grade column at grade board
-scoreRoute.get('/scores-final', scoreController.getScoresFinal); // doing
+scoreRoute.get('/scores-final', scoreController.getScoresFinal); // done
 
 // View list of grade reviews requested by students
 scoreRoute.get('/requests', scoreController.getRequests); // done

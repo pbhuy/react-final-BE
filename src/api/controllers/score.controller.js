@@ -120,11 +120,9 @@ module.exports = {
                         select: 'name',
                     },
                 });
-            // Use reduce to group scores by teacherId and studentId
-            const refactoredResult = scores.reduce((result, score) => {
+            const finalScore = scores.reduce((result, score) => {
                 const { teacher, student, type, value } = score;
 
-                // Find or create the teacher entry in the result
                 let teacherEntry = result.find(
                     (entry) => entry.teacher === teacher
                 );
@@ -133,9 +131,8 @@ module.exports = {
                     result.push(teacherEntry);
                 }
 
-                // Find or create the student entry in the teacher's scoreBoard
                 let studentEntry = teacherEntry.scoreBoard.find(
-                    (entry) => entry.studentId === student
+                    (entry) => entry.student === student
                 );
                 if (!studentEntry) {
                     studentEntry = {
@@ -145,9 +142,8 @@ module.exports = {
                     teacherEntry.scoreBoard.push(studentEntry);
                 }
 
-                // Add the individual score to the student's scores
                 studentEntry.scores.push({
-                    typeId: type._id, // Assuming typeId._id is the scoreId
+                    typeId: type._id,
                     type: type.name,
                     percentage: type.percentage,
                     scoreId: score._id,
@@ -156,7 +152,7 @@ module.exports = {
 
                 return result;
             }, []);
-            sendRes(res, 200, refactoredResult);
+            sendRes(res, 200, finalScore);
         } catch (error) {
             next(error);
         }
@@ -180,7 +176,7 @@ module.exports = {
                 .lean();
             let result = [];
             scores.forEach(function (score) {
-                if (score.type.classId.toString() === classId)
+                if (score.type.class._id.toString() === classId)
                     result.push(score);
             });
             sendRes(res, 200, result);
@@ -391,7 +387,7 @@ module.exports = {
                 updateFields,
                 { returnDocument: 'after' }
             );
-            sendRes(res, 201, request);
+            sendRes(res, 200, request);
         } catch (error) {
             next(error);
         }
