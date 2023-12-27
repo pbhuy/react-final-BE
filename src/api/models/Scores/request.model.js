@@ -20,15 +20,15 @@ const requestSchema = new Schema(
             type: Number,
             required: [true, 'Expected score is required'],
         },
-        studentId: {
+        student: {
             type: Schema.Types.ObjectId,
             ref: 'Account',
         },
-        teacherId: {
+        teacher: {
             type: Schema.Types.ObjectId,
             ref: 'Account',
         },
-        classId: {
+        class: {
             type: Schema.Types.ObjectId,
             ref: 'ClassRoom',
         },

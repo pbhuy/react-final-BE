@@ -7,21 +7,21 @@ const scoreController = require('../controllers/score.controller');
 
 // Score Type
 scoreRoute.get('/types', scoreController.getTypes); // done
-scoreRoute.get('/class-types', scoreController.getTypeByClassId); // done
-scoreRoute.post('/create-types', scoreController.createType); // done
-scoreRoute.post('/update-types', scoreController.updateType); // done
-scoreRoute.get('/delete-types', scoreController.deleteType); // done
+scoreRoute.get('/class-type', scoreController.getTypeByClassId); // done
+scoreRoute.post('/create-type', scoreController.createType); // done
+scoreRoute.post('/update-type', scoreController.updateType); // done
+scoreRoute.post('/delete-type', scoreController.deleteType); // done
 
 // Score
-scoreRoute.get('/scores', scoreController.getScores); // done
 
 scoreRoute.get('/scores-final', scoreController.getScoresFinal); // doing
 
+scoreRoute.get('/scores', scoreController.getScores); // done
 scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done
 scoreRoute.get('/student-scores', scoreController.getScoreByStudentId); // done
-scoreRoute.post('/create-scores', scoreController.createScore); // done
-scoreRoute.post('/update-scores', scoreController.updateScore); // done
-scoreRoute.get('/delete-scores', scoreController.deleteScore); // done
+scoreRoute.post('/create-score', scoreController.createScore); // done
+scoreRoute.post('/update-score', scoreController.updateScore); // done
+scoreRoute.post('/delete-score', scoreController.deleteScore); // done
 
 // main API:
 
@@ -30,14 +30,14 @@ scoreRoute.get('/types', scoreController.getTypes); // done
 scoreRoute.get('/class-types', scoreController.getTypeByClassId); // done
 
 // - Add a grade composition with a name and grade scale (only choose in grade structure list)
-scoreRoute.post('/create-types', scoreController.createType); // done
+scoreRoute.post('/create-type', scoreController.createType); // done
 
 // Remove a grade composition  // done
-scoreRoute.get('/delete-types', scoreController.deleteType); // done
+scoreRoute.get('/delete-type', scoreController.deleteType); // done
 
 // Update a grade composition (name, grade scale)
 // Mark a grade composition as finalized
-scoreRoute.post('/update-types', scoreController.updateType); // done
+scoreRoute.post('/update-type', scoreController.updateType); // done
 
 // Class owner uploads a csv/xlsx file with student list (StudentId, Full name) // doing
 scoreRoute.post('/mock/add-students', (req, res) => {
@@ -51,26 +51,26 @@ scoreRoute.get('/scores-final', scoreController.getScoresFinal); // doing
 
 // View list of grade reviews requested by students
 scoreRoute.get('/requests', scoreController.getRequests); // done
-scoreRoute.post('/create-requests', scoreController.createRequest); // done
+scoreRoute.post('/create-request', scoreController.createRequest); // done
 scoreRoute.get('/request-details', scoreController.getRequestById); // done
 scoreRoute.get('/class-requests', scoreController.getRequestsByClassId); // done
 
 // Update - delete Request
-scoreRoute.post('/update-requests', scoreController.updateRequest); // doing
-scoreRoute.get('/delete-requests', scoreController.deleteRequest); // doing
+scoreRoute.post('/update-request', scoreController.updateRequest); // done
+scoreRoute.post('/delete-request', scoreController.deleteRequest); // done
 
 // View grade review details: Student, grade composition, current grade, student expectation grade, student explanation
-scoreRoute.get('/comment-request', scoreController.getCommentByRequestId); // done
 
 // Get comment by id
 scoreRoute.get('/comment', scoreController.getCommentById); // done
 // Comment on a student review
 scoreRoute.post('/create-comment', scoreController.createComment); // done
-// Get all comments of the request by request id
-scoreRoute.get('/comment-request', scoreController.getCommentByRequestId); // done
-// Delete comment by id
-scoreRoute.get('/delete-comment', scoreController.deleteComment); // done
+
+// Update - Delete comment by id
+scoreRoute.post('/update-comment', scoreController.updateComment); // done
+scoreRoute.post('/delete-comment', scoreController.deleteComment); // done
+
 // Mark the final decision for a student review with an updated grade
-scoreRoute.post('/update-scores', scoreController.updateScore); // done
+scoreRoute.post('/update-score', scoreController.updateScore); // done
 
 module.exports = scoreRoute;

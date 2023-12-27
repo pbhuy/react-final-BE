@@ -4,15 +4,15 @@ const { Schema } = mongoose;
 
 const scoreSchema = new Schema(
     {
-        studentId: {
+        student: {
             type: Schema.Types.ObjectId,
             ref: 'Account',
         },
-        teacherId: {
+        teacher: {
             type: Schema.Types.ObjectId,
             ref: 'Account',
         },
-        typeId: {
+        type: {
             type: Schema.Types.ObjectId,
             ref: 'Type',
         },

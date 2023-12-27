@@ -5,17 +5,13 @@ const Type = require('../models/Scores/type.model');
 const Score = require('../models/Scores/score.model');
 const Request = require('../models/Scores/request.model');
 const Comment = require('../models/Scores/comment.model');
-// const Semester = require('../models/Scores/semester.model')
-// const Semester = require('../models/Scores/semester.model')
-// const Semester = require('../models/Scores/semester.model')
-// const Semester = require('../models/Scores/semester.model')
 
 module.exports = {
     // Type controllers
     getTypes: async (req, res, next) => {
         try {
             const types = await Type.find().populate({
-                path: 'classId',
+                path: 'class',
                 select: 'name description',
             });
             sendRes(res, 200, types);
@@ -26,8 +22,8 @@ module.exports = {
     getTypeByClassId: async (req, res, next) => {
         try {
             const { classId } = req.query;
-            const types = await Type.find({ classId }).populate({
-                path: 'classId',
+            const types = await Type.find({ class: classId }).populate({
+                path: 'class',
                 select: 'name description',
             });
             sendRes(res, 200, types);
@@ -40,7 +36,7 @@ module.exports = {
             const { name, percentage, classId } = req.body;
             if (!name || !classId)
                 return next(new ApiError(404, 'Missing field'));
-            const type = new Type({ name, percentage, classId });
+            const type = new Type({ name, percentage, class: classId });
             await type.save();
             sendRes(res, 200, type);
         } catch (error) {
@@ -79,7 +75,7 @@ module.exports = {
     },
     deleteType: async (req, res, next) => {
         try {
-            const { typeId } = req.query;
+            const { typeId } = req.body;
             if (!typeId) return next(new ApiError(404, 'Missing field'));
             await Type.findByIdAndDelete(typeId);
             sendRes(res, 204);
@@ -91,10 +87,19 @@ module.exports = {
     // Score controllers
     getScores: async (req, res, next) => {
         try {
-            const scores = await Score.find().populate({
-                path: 'studentId teacherId typeId',
-                select: 'name percentage classId',
-            });
+            const scores = await Score.find()
+                .populate({
+                    path: 'student teacher type',
+                    select: 'name',
+                })
+                .populate({
+                    path: 'type',
+                    select: 'name percentage',
+                    populate: {
+                        path: 'class',
+                        select: 'name',
+                    },
+                });
             sendRes(res, 200, scores);
         } catch (error) {
             next(error);
@@ -102,11 +107,56 @@ module.exports = {
     },
     getScoresFinal: async (req, res, next) => {
         try {
-            const scores = await Score.find().populate({
-                path: 'studentId teacherId typeId',
-                select: 'name percentage classId',
-            });
-            sendRes(res, 200, scores);
+            const scores = await Score.find()
+                .populate({
+                    path: 'student teacher',
+                    select: 'name',
+                })
+                .populate({
+                    path: 'type',
+                    select: 'name percentage',
+                    populate: {
+                        path: 'class',
+                        select: 'name',
+                    },
+                });
+            // Use reduce to group scores by teacherId and studentId
+            const refactoredResult = scores.reduce((result, score) => {
+                const { teacher, student, type, value } = score;
+
+                // Find or create the teacher entry in the result
+                let teacherEntry = result.find(
+                    (entry) => entry.teacher === teacher
+                );
+                if (!teacherEntry) {
+                    teacherEntry = { teacher, scoreBoard: [] };
+                    result.push(teacherEntry);
+                }
+
+                // Find or create the student entry in the teacher's scoreBoard
+                let studentEntry = teacherEntry.scoreBoard.find(
+                    (entry) => entry.studentId === student
+                );
+                if (!studentEntry) {
+                    studentEntry = {
+                        student,
+                        scores: [],
+                    };
+                    teacherEntry.scoreBoard.push(studentEntry);
+                }
+
+                // Add the individual score to the student's scores
+                studentEntry.scores.push({
+                    typeId: type._id, // Assuming typeId._id is the scoreId
+                    type: type.name,
+                    percentage: type.percentage,
+                    scoreId: score._id,
+                    value,
+                });
+
+                return result;
+            }, []);
+            sendRes(res, 200, refactoredResult);
         } catch (error) {
             next(error);
         }
@@ -116,13 +166,21 @@ module.exports = {
             const { classId } = req.query;
             const scores = await Score.find()
                 .populate({
-                    path: 'studentId teacherId typeId',
-                    select: 'name percentage classId',
+                    path: 'student teacher',
+                    select: 'name',
+                })
+                .populate({
+                    path: 'type',
+                    select: 'name percentage',
+                    populate: {
+                        path: 'class',
+                        select: 'name',
+                    },
                 })
                 .lean();
             let result = [];
             scores.forEach(function (score) {
-                if (score.typeId.classId.toString() === classId)
+                if (score.type.classId.toString() === classId)
                     result.push(score);
             });
             sendRes(res, 200, result);
@@ -133,10 +191,18 @@ module.exports = {
     getScoreByStudentId: async (req, res, next) => {
         try {
             const { studentId } = req.query;
-            const scores = await Score.find({ studentId })
+            const scores = await Score.find({ student: studentId })
                 .populate({
-                    path: 'studentId teacherId typeId',
-                    select: 'name percentage classId',
+                    path: 'student teacher',
+                    select: 'name',
+                })
+                .populate({
+                    path: 'type',
+                    select: 'name percentage',
+                    populate: {
+                        path: 'class',
+                        select: 'name',
+                    },
                 })
                 .lean();
             sendRes(res, 200, scores);
@@ -149,7 +215,12 @@ module.exports = {
             const { studentId, teacherId, typeId, value } = req.body;
             if (!studentId || !teacherId || !typeId || !value)
                 return next(new ApiError(404, 'Missing field'));
-            const score = new Score({ studentId, teacherId, typeId, value });
+            const score = new Score({
+                student: studentId,
+                teacher: teacherId,
+                type: typeId,
+                value,
+            });
             await score.save();
             sendRes(res, 200, score);
         } catch (error) {
@@ -162,7 +233,7 @@ module.exports = {
             if (!studentId || !teacherId || !typeId || !value)
                 return next(new ApiError(404, 'Missing field'));
             const score = await Score.findOneAndUpdate(
-                { studentId, teacherId, typeId },
+                { student: studentId, teacher: teacherId, type: typeId },
                 { value },
                 { returnDocument: 'after' }
             );
@@ -173,7 +244,7 @@ module.exports = {
     },
     deleteScore: async (req, res, next) => {
         try {
-            const { scoreId } = req.query;
+            const { scoreId } = req.body;
             if (!scoreId) return next(new ApiError(404, 'Missing field'));
             await Score.findByIdAndDelete(scoreId);
             sendRes(res, 204);
@@ -187,14 +258,15 @@ module.exports = {
         try {
             const requests = await Request.find()
                 .populate({
-                    path: 'studentId teacherId classId',
+                    path: 'student teacher class',
                     select: 'name',
                 })
                 .populate({
                     path: 'comments',
                     select: 'content',
                     populate: {
-                        path: 'accountId',
+                        path: 'account',
+                        model: 'Account',
                         select: 'name',
                     },
                 });
@@ -207,10 +279,20 @@ module.exports = {
         try {
             const { requestId } = req.query;
             if (!requestId) return next(new ApiError(404, 'Missing field'));
-            const request = await Request.findById(requestId).populate({
-                path: 'studentId teacherId classId',
-                select: 'name',
-            });
+            const request = await Request.findById(requestId)
+                .populate({
+                    path: 'student teacher class',
+                    select: 'name',
+                })
+                .populate({
+                    path: 'comments',
+                    select: 'content',
+                    populate: {
+                        path: 'account',
+                        model: 'Account',
+                        select: 'name',
+                    },
+                });
             sendRes(res, 200, request);
         } catch (error) {
             next(error);
@@ -219,10 +301,20 @@ module.exports = {
     getRequestsByClassId: async (req, res, next) => {
         try {
             const { classId } = req.query;
-            const requests = await Request.find({ classId }).populate({
-                path: 'studentId teacherId classId',
-                select: 'name',
-            });
+            const requests = await Request.find({ class: classId })
+                .populate({
+                    path: 'student teacher class',
+                    select: 'name',
+                })
+                .populate({
+                    path: 'comments',
+                    select: 'content',
+                    populate: {
+                        path: 'account',
+                        model: 'Account',
+                        select: 'name',
+                    },
+                });
             sendRes(res, 200, requests);
         } catch (error) {
             next(error);
@@ -239,14 +331,24 @@ module.exports = {
                 teacherId,
                 classId,
             } = req.body;
+            if (
+                !title ||
+                !explain ||
+                !studentId ||
+                !teacherId ||
+                !classId ||
+                !actualScore ||
+                !expectedScore
+            )
+                return next(new ApiError(404, 'Missing field'));
             const request = new Request({
                 title,
                 explain,
                 actualScore,
                 expectedScore,
-                studentId,
-                teacherId,
-                classId,
+                student: studentId,
+                teacher: teacherId,
+                class: classId,
             });
             await request.save();
             sendRes(res, 201, request);
@@ -256,6 +358,8 @@ module.exports = {
     },
     updateRequest: async (req, res, next) => {
         try {
+            const { requestId } = req.query;
+            if (!requestId) return next(new ApiError(404, 'Missing field'));
             const {
                 title,
                 explain,
@@ -265,16 +369,28 @@ module.exports = {
                 teacherId,
                 classId,
             } = req.body;
-            const request = new Request({
+            if (!studentId || !teacherId || !classId)
+                return next(new ApiError(404, 'Missing field'));
+            const updateFields = {
                 title,
                 explain,
                 actualScore,
                 expectedScore,
-                studentId,
-                teacherId,
-                classId,
+                student: studentId,
+                teacher: teacherId,
+                class: classId,
+            };
+            // Remove undefined fields
+            Object.keys(updateFields).forEach((key) => {
+                if (updateFields[key] === undefined) {
+                    delete updateFields[key];
+                }
             });
-            await request.save();
+            const request = await Request.findByIdAndUpdate(
+                requestId,
+                updateFields,
+                { returnDocument: 'after' }
+            );
             sendRes(res, 201, request);
         } catch (error) {
             next(error);
@@ -282,26 +398,10 @@ module.exports = {
     },
     deleteRequest: async (req, res, next) => {
         try {
-            const {
-                title,
-                explain,
-                actualScore,
-                expectedScore,
-                studentId,
-                teacherId,
-                classId,
-            } = req.body;
-            const request = new Request({
-                title,
-                explain,
-                actualScore,
-                expectedScore,
-                studentId,
-                teacherId,
-                classId,
-            });
-            await request.save();
-            sendRes(res, 201, request);
+            const { requestId } = req.body;
+            if (!requestId) return next(new ApiError(404, 'Missing field'));
+            await Request.findByIdAndDelete(requestId);
+            sendRes(res, 204);
         } catch (error) {
             next(error);
         }
@@ -316,16 +416,6 @@ module.exports = {
             next(error);
         }
     },
-    getCommentByRequestId: async (req, res, next) => {
-        try {
-            const { requestId } = req.query;
-            if (!requestId) return next(new ApiError(404, 'Missing field'));
-            const comments = await Comment.findOne({ requestId });
-            sendRes(res, 200, comments);
-        } catch (error) {
-            next(error);
-        }
-    },
     createComment: async (req, res, next) => {
         try {
             const { accountId, requestId, content } = req.body;
@@ -333,7 +423,7 @@ module.exports = {
                 return next(new ApiError(404, 'Missing field'));
 
             // create new comment in request
-            const comment = new Comment({ accountId, requestId, content });
+            const comment = new Comment({ account: accountId, content });
             await comment.save();
 
             // update comments in request
@@ -347,9 +437,24 @@ module.exports = {
             next(error);
         }
     },
-    deleteComment: async (req, res, next) => {
+    updateComment: async (req, res, next) => {
         try {
             const { commentId } = req.query;
+            const { content } = req.body;
+            if (!commentId) return next(new ApiError(404, 'Missing field'));
+            const result = await Comment.findByIdAndUpdate(
+                commentId,
+                { content },
+                { returnDocument: 'after' }
+            );
+            sendRes(res, 200, result);
+        } catch (error) {
+            next(error);
+        }
+    },
+    deleteComment: async (req, res, next) => {
+        try {
+            const { commentId } = req.body;
             if (!commentId) return next(new ApiError(404, 'Missing field'));
             await Comment.findByIdAndDelete(commentId);
             sendRes(res, 204);

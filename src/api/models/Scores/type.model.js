@@ -12,7 +12,7 @@ const TypeSchema = new Schema(
             type: Number,
             default: 0.0,
         },
-        classId: {
+        class: {
             type: Schema.Types.ObjectId,
             ref: 'ClassRoom',
         },
