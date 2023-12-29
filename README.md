@@ -5,6 +5,7 @@ Configure the application according to the format specified in the .env.example 
 Installation all dependency packages
 
 ```
+nvm use
 npm install
 ```
 
