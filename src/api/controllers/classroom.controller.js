@@ -109,7 +109,7 @@ module.exports = {
         return sendRes(
           res,
           200,
-          paginate({ data: classes, page: +page, limit: +limit }),
+          paginate({ data: classes, page: +page, limit: +limit })
         );
       } else {
         return sendErr(res, {
@@ -133,7 +133,7 @@ module.exports = {
     // find class in db
     let foundClass;
     if (classId) {
-      foundClass = await ClassRoom.findOne({ id: classId });
+      foundClass = await ClassRoom.findById(classId);
     }
 
     if (invitationCode) {
@@ -206,8 +206,8 @@ module.exports = {
           res,
           new ApiError(
             400,
-            'Please provide at least one teacher or one student email.',
-          ),
+            'Please provide at least one teacher or one student email.'
+          )
         );
       // check class exist
       const foundClass = await ClassRoom.findById(classId);
@@ -245,7 +245,7 @@ module.exports = {
           url,
           'Join Class',
           account.name,
-          foundClass.name,
+          foundClass.name
         );
       });
       console.log('accounts ', accounts);
@@ -259,7 +259,7 @@ module.exports = {
           newTeacherUrl,
           'Join Class',
           email,
-          foundClass.name,
+          foundClass.name
         );
       });
 
@@ -269,7 +269,7 @@ module.exports = {
           newStudentUrl,
           'Join Class',
           email,
-          foundClass.name,
+          foundClass.name
         );
       });
 
