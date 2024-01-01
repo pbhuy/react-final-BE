@@ -47,10 +47,12 @@ module.exports = {
       if (!student) {
         return sendErr(res, new ApiError(400, 'Student not found'));
       }
-      student.mapCode = '';
-      await student.save();
 
-      return sendRes(res, 200, student);
+      const updatedStudent = await Account.findByIdAndUpdate(studentId, {
+        $unset: { mapCode: 1 },
+      });
+
+      return sendRes(res, 200, updatedStudent);
     } catch (error) {
       return sendErr(res, new ApiError(500, error));
     }
