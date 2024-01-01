@@ -4,6 +4,7 @@ const ClassRoom = require('../models/Classroom/classroom.model');
 
 const ApiError = require('../helpers/error');
 const { sendRes, sendErr } = require('../helpers/response');
+const { generateInvitationCode } = require('../helpers/invitaioncode');
 
 module.exports = {
   mappingStudent: async (req, res) => {
@@ -130,6 +131,31 @@ module.exports = {
         return sendRes(res, 200, account);
       }
       return sendErr(res, new ApiError(400, 'Account is not locked'));
+    } catch (error) {
+      return sendErr(res, new ApiError(500, error));
+    }
+  },
+  createInvitationCode: async (req, res) => {
+    const { classId } = req.body;
+    if (!classId) return sendErr(res, new ApiError(400, 'Missing classId'));
+    try {
+      const existedClass = await ClassRoom.findById(classId);
+      if (!existedClass) {
+        return sendErr(res, new ApiError(400, 'Class not found'));
+      }
+      const existedInvitationCode = await ClassRoom.findOne({
+        invitationCode: existedClass.invitationCode,
+      });
+      if (existedInvitationCode) {
+        return sendErr(res, new ApiError(400, 'Invitation code already exist'));
+      }
+
+      const invitationCode = generateInvitationCode();
+      const updated = await ClassRoom.findByIdAndUpdate(classId, {
+        invitationCode,
+      });
+
+      return sendRes(res, 200, updated);
     } catch (error) {
       return sendErr(res, new ApiError(500, error));
     }
