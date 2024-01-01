@@ -9,6 +9,10 @@ adminRoute.post('/account/map', adminController.mappingStudent);
 adminRoute.post('/account/lock', adminController.lockAccount);
 adminRoute.post('/account/unlock', adminController.unlockAccount);
 adminRoute.post('/class/invitationcode', adminController.createInvitationCode);
+adminRoute.post(
+  '/class/invitationcode/remove',
+  adminController.removeInvitationCode
+);
 
 // part2
 adminRoute.post('/account/unmap', adminController.unmapStudent);

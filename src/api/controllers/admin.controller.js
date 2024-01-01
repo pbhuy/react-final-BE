@@ -160,4 +160,25 @@ module.exports = {
       return sendErr(res, new ApiError(500, error));
     }
   },
+  removeInvitationCode: async (req, res) => {
+    const { classId } = req.body;
+    if (!classId) return sendErr(res, new ApiError(400, 'Missing classId'));
+    try {
+      const existedClass = await ClassRoom.findById(classId);
+      if (!existedClass) {
+        return sendErr(res, new ApiError(400, 'Class not found'));
+      }
+      if (!existedClass.invitationCode) {
+        return sendErr(res, new ApiError(400, 'Class has no invitation code'));
+      }
+
+      const updated = await ClassRoom.findByIdAndUpdate(classId, {
+        $unset: { invitationCode: 1 },
+      });
+
+      return sendRes(res, 200, updated);
+    } catch (error) {
+      return sendErr(res, new ApiError(500, error));
+    }
+  },
 };
