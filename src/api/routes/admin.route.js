@@ -16,6 +16,7 @@ adminRoute.post(
 
 // part2
 adminRoute.post('/account/unmap', adminController.unmapStudent);
-// adminRoute.post('/account/active', adminController.unmapStudent);
+adminRoute.post('/class/active', adminController.activeClass);
+adminRoute.post('/class/inactive', adminController.inactiveClass);
 
 module.exports = adminRoute;

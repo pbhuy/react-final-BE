@@ -181,4 +181,47 @@ module.exports = {
       return sendErr(res, new ApiError(500, error));
     }
   },
+  inactiveClass: async (req, res) => {
+    const { classId } = req.body;
+    if (!classId) return sendErr(res, new ApiError(400, 'Missing classId'));
+    try {
+      const existedClass = await ClassRoom.findById(classId);
+      if (!existedClass) {
+        return sendErr(res, new ApiError(400, 'Class not found'));
+      }
+      if (!existedClass.isActived) {
+        return sendErr(res, new ApiError(400, 'Class is already inactive'));
+      }
+
+      const updated = await ClassRoom.findByIdAndUpdate(classId, {
+        isActived: false,
+      });
+
+      return sendRes(res, 200, updated);
+    } catch (error) {
+      return sendErr(res, new ApiError(500, error));
+    }
+  },
+
+  activeClass: async (req, res) => {
+    const { classId } = req.body;
+    if (!classId) return sendErr(res, new ApiError(400, 'Missing classId'));
+    try {
+      const existedClass = await ClassRoom.findById(classId);
+      if (!existedClass) {
+        return sendErr(res, new ApiError(400, 'Class not found'));
+      }
+      if (existedClass.isActived) {
+        return sendErr(res, new ApiError(400, 'Class is already active'));
+      }
+
+      const updated = await ClassRoom.findByIdAndUpdate(classId, {
+        isActived: true,
+      });
+
+      return sendRes(res, 200, updated);
+    } catch (error) {
+      return sendErr(res, new ApiError(500, error));
+    }
+  },
 };
