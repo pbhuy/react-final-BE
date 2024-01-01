@@ -62,6 +62,8 @@ module.exports = {
     // pagination
     const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
+    const total = await ClassRoom.countDocuments({});
+    const pages = Math.ceil(total / limit);
 
     if (page < 1 || limit < 1 || skip < 0)
       return sendErr(res, new ApiError(400, 'Invalid pagination'));
@@ -75,7 +77,7 @@ module.exports = {
     )
       .skip(skip)
       .limit(limit);
-    return sendRes(res, 200, { page, limit, classes });
+    return sendRes(res, 200, { page, limit, total, pages, classes });
   },
   getAccounts: async (req, res) => {
     // pagination
