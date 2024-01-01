@@ -7,11 +7,36 @@ const { sendRes, sendErr } = require('../helpers/response');
 
 module.exports = {
   mappingStudent: async (req, res) => {
-    const { studentId = '', mapCode = '' } = req.body;
+    const { studentId, mapCode = '' } = req.body;
 
     if (mapCode.length !== 8) {
       return sendErr(res, new ApiError(400, 'Invalid mapCode'));
     }
+
+    if (!studentId) {
+      return sendErr(res, new ApiError(400, 'Missing studentId'));
+    }
+    try {
+      const existedMapcode = await Account.findOne({ mapCode });
+      if (existedMapcode) {
+        return sendErr(res, new ApiError(400, 'Mapcode already existed'));
+      }
+
+      const student = await Account.findById(studentId);
+      if (!student) {
+        return sendErr(res, new ApiError(400, 'Student not found'));
+      }
+      if (!student.mapCode || student.mapCode.length !== 8) {
+        student.mapCode = mapCode;
+        await student.save();
+        return sendRes(res, 200, student);
+      }
+    } catch (error) {
+      return sendErr(res, new ApiError(500, error));
+    }
+  },
+  unmapStudent: async (req, res) => {
+    const { studentId } = req.body;
 
     if (!studentId) {
       return sendErr(res, new ApiError(400, 'Missing studentId'));
@@ -22,7 +47,7 @@ module.exports = {
       if (!student) {
         return sendErr(res, new ApiError(400, 'Student not found'));
       }
-      student.mapCode = mapCode;
+      student.mapCode = '';
       await student.save();
 
       return sendRes(res, 200, student);
@@ -84,6 +109,25 @@ module.exports = {
       await account.save();
 
       return sendRes(res, 200, account);
+    } catch (error) {
+      return sendErr(res, new ApiError(500, error));
+    }
+  },
+
+  unlockAccount: async (req, res) => {
+    const { id } = req.body;
+    if (!id) return sendErr(res, new ApiError(400, 'Missing id'));
+    try {
+      const account = await Account.findById(id);
+      if (!account) {
+        return sendErr(res, new ApiError(400, 'Account not found'));
+      }
+      if (account.isLocked) {
+        account.isLocked = false;
+        await account.save();
+        return sendRes(res, 200, account);
+      }
+      return sendErr(res, new ApiError(400, 'Account is not locked'));
     } catch (error) {
       return sendErr(res, new ApiError(500, error));
     }
