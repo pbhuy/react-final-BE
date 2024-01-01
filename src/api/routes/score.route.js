@@ -43,6 +43,9 @@ scoreRoute.post('/mock/add-students', (req, res) => {
     sendRes(res, 200);
 });
 
+// extra
+scoreRoute.post('/scores', scoreController.createScore); // done
+
 // Show Students (pre-upload full student list) x Grades board
 // Show total grade column at grade board
 scoreRoute.get('/scores-final', scoreController.getScoresFinal); // done
@@ -70,5 +73,6 @@ scoreRoute.post('/delete-comment', scoreController.deleteComment); // done
 
 // Mark the final decision for a student review with an updated grade
 scoreRoute.post('/update-score', scoreController.updateScore); // done
+
 
 module.exports = scoreRoute;

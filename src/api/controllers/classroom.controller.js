@@ -133,7 +133,7 @@ module.exports = {
     // find class in db
     let foundClass;
     if (classId) {
-      foundClass = await ClassRoom.findOne({ id: classId });
+      foundClass = await ClassRoom.findById(classId);
     }
 
     if (invitationCode) {
