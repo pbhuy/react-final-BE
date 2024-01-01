@@ -4,27 +4,19 @@ const { Schema } = mongoose;
 
 const scoreSchema = new Schema(
     {
-        studentId: {
-            type: String,
-            default: '',
+        student: {
+            type: Schema.Types.ObjectId,
+            ref: 'Account',
         },
-        teacherId: {
-            type: String,
-            default: '',
+        teacher: {
+            type: Schema.Types.ObjectId,
+            ref: 'Account',
         },
-        subjectId: {
-            type: String,
-            default: '',
+        type: {
+            type: Schema.Types.ObjectId,
+            ref: 'Type',
         },
-        scoreTypeId: {
-            type: String,
-            default: '',
-        },
-        semester: {
-            type: String,
-            default: '',
-        },
-        scoreValue: {
+        value: {
             type: Number,
             default: 0.0,
         },

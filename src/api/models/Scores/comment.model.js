@@ -4,10 +4,14 @@ const { Schema } = mongoose;
 
 const commentSchema = new Schema(
     {
+        account: {
+            type: Schema.Types.ObjectId,
+            ref: 'Account',
+        },
         content: {
             type: String,
-            required: [true, 'Content is required']
-        }
+            required: [true, 'Content of comment is required'],
+        },
     },
     { timestamps: true }
 );

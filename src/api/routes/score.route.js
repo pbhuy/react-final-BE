@@ -1,41 +1,43 @@
-const mockData = require('../../data/mockData');
 const { sendRes, sendErr } = require('../helpers/response');
 const scoreRoute = require('express').Router();
 const scoreController = require('../controllers/score.controller');
 
 // utils API
 
-scoreRoute.get('/semesters', scoreController.getSemesters); // done
-scoreRoute.post('/semesters', scoreController.createSemester); // done
+// Score Type
+scoreRoute.get('/types', scoreController.getTypes); // done - test ok
+scoreRoute.get('/class-types', scoreController.getTypeByClassId); // done - test ok
+scoreRoute.post('/create-type', scoreController.createType); // done - test ok
+scoreRoute.post('/update-type', scoreController.updateType); // done - test ok
+scoreRoute.post('/delete-type', scoreController.deleteType); // done - test ok
 
-scoreRoute.get('/scoretypes', scoreController.getScoreTypes); // done
-scoreRoute.post('/scoretypes', scoreController.createScoreType); // done
+// Score
 
-scoreRoute.get('/subjects', scoreController.getSubjects); // done
-scoreRoute.post('/subjects', scoreController.createSubject); // done
+scoreRoute.get('/scores-final', scoreController.getScoresFinal); // done
+scoreRoute.get('/scores', scoreController.getScores); // done - test ok
+scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done - test ok
+scoreRoute.get('/student-scores', scoreController.getScoreByStudentId); // done - test ok
+scoreRoute.post('/create-score', scoreController.createScore); // done - test ok
+scoreRoute.post('/update-score', scoreController.updateScore); // done - test ok
+scoreRoute.post('/delete-score', scoreController.deleteScore); // done - test ok
 
 // main API:
 
 // - Show current grade structure:
-scoreRoute.post('/grade-structure', scoreController.getScoreStructure); // done
+scoreRoute.get('/types', scoreController.getTypes); // done
+scoreRoute.get('/class-types', scoreController.getTypeByClassId); // done
 
 // - Add a grade composition with a name and grade scale (only choose in grade structure list)
-scoreRoute.post('/add-grade-composition', scoreController.addScoreStructure); // done
+scoreRoute.post('/create-type', scoreController.createType); // done
 
 // Remove a grade composition  // done
-scoreRoute.post(
-    '/remove-grade-composition',
-    scoreController.removeScoreStructure
-);
+scoreRoute.get('/delete-type', scoreController.deleteType); // done
 
 // Update a grade composition (name, grade scale)
 // Mark a grade composition as finalized
-scoreRoute.post(
-    '/update-grade-composition',
-    scoreController.updateScoreStructure // done
-);
+scoreRoute.post('/update-type', scoreController.updateType); // done
 
-// Class owner uploads a csv/xlsx file with student list (StudentId, Full name)
+// Class owner uploads a csv/xlsx file with student list (StudentId, Full name) // doing
 scoreRoute.post('/mock/add-students', (req, res) => {
     // @todo: handle xls file here and add to database
     sendRes(res, 200);
@@ -46,55 +48,31 @@ scoreRoute.post('/scores', scoreController.createScore); // done
 
 // Show Students (pre-upload full student list) x Grades board
 // Show total grade column at grade board
-scoreRoute.get('/scores', scoreController.getScores); //
+scoreRoute.get('/scores-final', scoreController.getScoresFinal); // done
 
 // View list of grade reviews requested by students
-scoreRoute.get('/mock/reviews-requested', (req, res) => {
-    const { subjectId, teacherId, semesterId } = req.query;
-    // @todo: handle xls file here and add to database
-    sendRes(
-        res,
-        200,
-        mockData.getScoresRequested({
-            subjectId,
-            teacherId,
-            semesterId,
-        })
-    );
-});
+scoreRoute.get('/requests', scoreController.getRequests); // done
+scoreRoute.post('/create-request', scoreController.createRequest); // done
+scoreRoute.get('/request-details', scoreController.getRequestById); // done
+scoreRoute.get('/class-requests', scoreController.getRequestsByClassId); // done
+
+// Update - delete Request
+scoreRoute.post('/update-request', scoreController.updateRequest); // done
+scoreRoute.post('/delete-request', scoreController.deleteRequest); // done
 
 // View grade review details: Student, grade composition, current grade, student expectation grade, student explanation
-scoreRoute.get('/mock/review-requested-detail', (req, res) => {
-    const { subjectId, teacherId, semesterId, reviewRequestedId } = req.query;
-    // @todo: handle xls file here and add to database
-    sendRes(
-        res,
-        200,
-        mockData.getScoresRequestedDetail({
-            subjectId,
-            teacherId,
-            semesterId,
-            reviewRequestedId,
-        })
-    );
-});
 
+// Get comment by id
+scoreRoute.get('/comment', scoreController.getCommentById); // done
 // Comment on a student review
-scoreRoute.post('/mock/comment-review', (req, res) => {
-    const { userId, reviewRequestedId, content } = req.body;
-    // @todo: handle xls file here and add to database
-    sendRes(
-        res,
-        200,
-        mockData.commentReview({
-            userId,
-            reviewRequestedId,
-            content,
-        })
-    );
-});
+scoreRoute.post('/create-comment', scoreController.createComment); // done
+
+// Update - Delete comment by id
+scoreRoute.post('/update-comment', scoreController.updateComment); // done
+scoreRoute.post('/delete-comment', scoreController.deleteComment); // done
 
 // Mark the final decision for a student review with an updated grade
-scoreRoute.post('/mock/update-score', scoreController.updateScore);
+scoreRoute.post('/update-score', scoreController.updateScore); // done
+
 
 module.exports = scoreRoute;
