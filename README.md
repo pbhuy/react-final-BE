@@ -5,6 +5,7 @@ Configure the application according to the format specified in the .env.example 
 Installation all dependency packages
 
 ```
+nvm use
 npm install
 ```
 
@@ -144,3 +145,25 @@ P/s
 
 - GET /classes?page={page}&limit={limit}
   -- get all classes (only return id, name and description)
+
+## Admin endpoints:
+
+P/s
+
+- all enpoints below start with "/admin"
+- with error request, will return
+
+  ```{
+  success: false,
+  error: {
+    message: err.message,
+  },
+  }
+  ```
+
+- GET /accounts?role=...&page=...&limit=...
+  -- type: teacher || student
+  -- page: 1,2,3..
+  -- limit: 1,2,3..
+
+- GET /classes
