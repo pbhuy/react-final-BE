@@ -89,6 +89,8 @@ module.exports = {
 
     if (page < 1 || limit < 1 || skip < 0)
       return sendErr(res, new ApiError(400, 'Invalid pagination'));
+    const total = await Account.countDocuments({ role });
+    const pages = Math.ceil(total / limit);
 
     const accounts = await Account.find(
       { role },
@@ -100,7 +102,7 @@ module.exports = {
     )
       .skip(skip)
       .limit(limit);
-    return sendRes(res, 200, { page, limit, accounts });
+    return sendRes(res, 200, { page, pages, limit, accounts });
   },
   lockAccount: async (req, res) => {
     const { id } = req.body;
