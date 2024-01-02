@@ -107,7 +107,9 @@ module.exports = {
     },
     getScoresFinal: async (req, res, next) => {
         try {
-            const scores = await Score.find()
+            const { classId } = req.query;
+            const types = await Type.find({ class: classId });
+            const scores = await Score.find({type: {$in: types}})
                 .populate({
                     path: 'student teacher',
                     select: 'name',
