@@ -61,6 +61,29 @@ module.exports = {
   getClasses: async (req, res) => {
     // pagination
     const { page = 1, limit = 10 } = req.query;
+    let { filter, sort } = req.query;
+    let sortQuery = {};
+    if (sort) {
+      sort = JSON.parse(sort);
+      if (sort.status === 'asc') {
+        sortQuery.isActived = 1;
+      } else {
+        sortQuery.isActived = -1;
+      }
+
+      if (sort.name === 'asc') {
+        sortQuery.name = 1;
+      } else {
+        sortQuery.name = -1;
+      }
+
+      console.log(sortQuery);
+    }
+
+    if (filter) {
+      filter = JSON.parse(filter);
+    }
+
     const skip = (page - 1) * limit;
     const total = await ClassRoom.countDocuments({});
     const pages = Math.ceil(total / limit);
@@ -75,6 +98,7 @@ module.exports = {
         updatedAt: 0,
       }
     )
+      .sort(sortQuery)
       .skip(skip)
       .limit(limit);
     return sendRes(res, 200, { page, limit, total, pages, classes });
@@ -99,9 +123,7 @@ module.exports = {
         createdAt: 0,
         updatedAt: 0,
       }
-    )
-      .skip(skip)
-      .limit(limit);
+    ).skip(skip);
     return sendRes(res, 200, { page, pages, limit, accounts });
   },
   lockAccount: async (req, res) => {
