@@ -61,46 +61,44 @@ module.exports = {
   getClasses: async (req, res) => {
     // pagination
     const { page = 1, limit = 10 } = req.query;
-    let { filter, sort } = req.query;
-    let sortQuery = {};
-    if (sort) {
-      sort = JSON.parse(sort);
-      if (sort.status === 'asc') {
-        sortQuery.isActived = 1;
-      } else {
-        sortQuery.isActived = -1;
-      }
-
-      if (sort.name === 'asc') {
-        sortQuery.name = 1;
-      } else {
-        sortQuery.name = -1;
-      }
-
-      console.log(sortQuery);
-    }
+    let { filter = {}, sort = {} } = req.query;
 
     if (filter) {
       filter = JSON.parse(filter);
+      const orConditions = [];
+
+      if (filter.name) {
+        orConditions.push({ name: new RegExp(filter.name, 'i') });
+        orConditions.push({ description: new RegExp(filter.name, 'i') });
+      }
+
+      if (orConditions.length > 0) {
+        filter.$or = orConditions;
+        delete filter.name; // Remove individual field conditions
+      }
     }
 
+    if (sort) {
+      sort = JSON.parse(sort);
+    }
+
+    console.log(filter);
+
     const skip = (page - 1) * limit;
-    const total = await ClassRoom.countDocuments({});
+    const total = await ClassRoom.countDocuments(filter);
     const pages = Math.ceil(total / limit);
 
     if (page < 1 || limit < 1 || skip < 0)
       return sendErr(res, new ApiError(400, 'Invalid pagination'));
 
-    const classes = await ClassRoom.find(
-      {},
-      {
-        createdAt: 0,
-        updatedAt: 0,
-      }
-    )
-      .sort(sortQuery)
+    const classes = await ClassRoom.find(filter, {
+      createdAt: 0,
+      updatedAt: 0,
+    })
+      .sort(sort)
       .skip(skip)
       .limit(limit);
+
     return sendRes(res, 200, { page, limit, total, pages, classes });
   },
   getAccounts: async (req, res) => {
@@ -220,7 +218,7 @@ module.exports = {
       }
 
       const updated = await ClassRoom.findByIdAndUpdate(classId, {
-        isActived: false,
+        $set: { isActived: false },
       });
 
       return sendRes(res, 200, updated);
@@ -242,7 +240,7 @@ module.exports = {
       }
 
       const updated = await ClassRoom.findByIdAndUpdate(classId, {
-        isActived: true,
+        $set: { isActived: true },
       });
 
       return sendRes(res, 200, updated);
