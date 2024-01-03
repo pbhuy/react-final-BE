@@ -41,11 +41,14 @@ module.exports = {
     const io = getIO();
 
     logger('getClass');
-    const { id } = req.query;
+    let { id, fields } = req.query;
     if (!id) {
       return sendErr(res, { status: 500, message: 'Missing required params' });
     }
     logger(id);
+    if (fields) {
+      fields = fields.split(',');
+    }
 
     try {
       const validClass = await ClassRoom.findById(id);
@@ -61,7 +64,9 @@ module.exports = {
       const teachersId = teachersInClass.map((teacher) => teacher.teacherId);
 
       const teachers = await Account.find({ _id: { $in: teachersId } });
-      const students = await Account.find({ _id: { $in: studentsId } });
+      const students = await Account.find({ _id: { $in: studentsId } }).select(
+        fields ? fields.join(' ') : ''
+      );
 
       console.log(teachers, students);
 
@@ -109,7 +114,7 @@ module.exports = {
         return sendRes(
           res,
           200,
-          paginate({ data: classes, page: +page, limit: +limit }),
+          paginate({ data: classes, page: +page, limit: +limit })
         );
       } else {
         return sendErr(res, {
@@ -206,8 +211,8 @@ module.exports = {
           res,
           new ApiError(
             400,
-            'Please provide at least one teacher or one student email.',
-          ),
+            'Please provide at least one teacher or one student email.'
+          )
         );
       // check class exist
       const foundClass = await ClassRoom.findById(classId);
@@ -245,7 +250,7 @@ module.exports = {
           url,
           'Join Class',
           account.name,
-          foundClass.name,
+          foundClass.name
         );
       });
       console.log('accounts ', accounts);
@@ -259,7 +264,7 @@ module.exports = {
           newTeacherUrl,
           'Join Class',
           email,
-          foundClass.name,
+          foundClass.name
         );
       });
 
@@ -269,7 +274,7 @@ module.exports = {
           newStudentUrl,
           'Join Class',
           email,
-          foundClass.name,
+          foundClass.name
         );
       });
 

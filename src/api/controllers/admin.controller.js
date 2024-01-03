@@ -61,7 +61,7 @@ module.exports = {
   getClasses: async (req, res) => {
     // pagination
     const { page = 1, limit = 10 } = req.query;
-    let { filter = {}, sort = {} } = req.query;
+    let { filter, sort } = req.query;
 
     if (filter) {
       filter = JSON.parse(filter);
@@ -82,7 +82,7 @@ module.exports = {
       sort = JSON.parse(sort);
     }
 
-    console.log(filter);
+    console.log(req.query);
 
     const skip = (page - 1) * limit;
     const total = await ClassRoom.countDocuments(filter);
