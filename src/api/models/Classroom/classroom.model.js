@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const classroom = new Schema(
@@ -14,11 +14,15 @@ const classroom = new Schema(
     invitationCode: {
       type: String,
       required: true,
-      default: "",
+      default: '',
+    },
+    isActived: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }
 );
 
-const ClassRoom = mongoose.model("ClassRoom", classroom);
+const ClassRoom = mongoose.model('ClassRoom', classroom);
 module.exports = ClassRoom;
