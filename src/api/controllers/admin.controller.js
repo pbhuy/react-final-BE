@@ -7,6 +7,47 @@ const { sendRes, sendErr } = require('../helpers/response');
 const { generateInvitationCode } = require('../helpers/invitaioncode');
 
 module.exports = {
+  mappingStudents: async (req, res) => {
+    let { students } = req.body;
+
+    if (!students) {
+      return sendErr(res, new ApiError(400, 'Missing students'));
+    }
+    console.log('students before filter', students);
+
+    students = students.filter(
+      (student) =>
+        student._id &&
+        student.mapCode &&
+        student.mapCode.toString().length === 8
+    );
+    console.log('students after filter', students);
+    const results = [];
+
+    for (const student of students) {
+      console.log(student);
+      const validStudent = await Account.findById(student._id);
+      if (!validStudent) {
+        return sendErr(res, new ApiError(400, 'Student not found'));
+      }
+      // update new mapcode
+      const updated = await Account.findByIdAndUpdate(
+        student._id,
+        {
+          mapCode: student.mapCode,
+        },
+        { new: true }
+      );
+      console.log('updated ', updated);
+      results.push(updated);
+    }
+
+    return sendRes(res, 200, {
+      results,
+      totalSuccess: results.length,
+      totalFailed: students.length - results.length,
+    });
+  },
   mappingStudent: async (req, res) => {
     const { studentId, mapCode = '' } = req.body;
 
