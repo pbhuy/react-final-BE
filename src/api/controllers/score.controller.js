@@ -36,6 +36,15 @@ module.exports = {
             const { name, percentage, classId } = req.body;
             if (!name || !classId)
                 return next(new ApiError(404, 'Missing field'));
+            const typeOfClass = await Type.find({ class: classId });
+            let totalPercentage = 0;
+            typeOfClass.forEach(function (type) {
+                totalPercentage += type.percentage;
+                if (type.name === name)
+                    return next(new ApiError(404, 'Type existed'));
+                if (totalPercentage + percentage > 1)
+                    return next(new ApiError(404, 'Invalid percentage'));
+            });
             const type = new Type({ name, percentage, class: classId });
             await type.save();
             sendRes(res, 200, type);
@@ -50,24 +59,54 @@ module.exports = {
             let result;
             if (!typeId || (!name && !percentage))
                 return next(new ApiError(404, 'Missing field'));
-            if (name && percentage)
+            const classOfType = await Type.findById(typeId);
+            const typeOfClass = await Type.find({ class: classOfType.class });
+            let totalPercentage = 0;
+            typeOfClass.forEach(function (type) {
+                if (type.name === name && type._id.toString() !== typeId)
+                    return next(new ApiError(404, 'Type existed'));
+                totalPercentage += type.percentage;
+                if (totalPercentage + percentage > 1)
+                    return next(new ApiError(404, 'Invalid percentage'));
+            });
+            if (name && percentage) {
+                typeOfClass.forEach(function (type) {
+                    if (type.name === name && type._id.toString() !== typeId)
+                        return next(new ApiError(404, 'Type existed'));
+                    totalPercentage += type.percentage;
+                    if (totalPercentage + percentage > 1)
+                        return next(new ApiError(404, 'Invalid percentage'));
+                });
                 result = await Type.findByIdAndUpdate(
                     typeId,
                     { name, percentage },
                     { returnDocument: 'after' }
                 );
-            else if (percentage)
+            }
+            else if (percentage) {
+                typeOfClass.forEach(function (type) {
+                    totalPercentage += type.percentage;
+                    if (totalPercentage + percentage > 1)
+                        return next(new ApiError(404, 'Invalid percentage'));
+                });
                 result = await Type.findByIdAndUpdate(
                     typeId,
                     { percentage },
                     { returnDocument: 'after' }
                 );
-            else if (name)
+            }
+            else if (name) {
+                typeOfClass.forEach(function (type) {
+                    if (type.name === name && type._id.toString() !== typeId)
+                        return next(new ApiError(404, 'Type existed'));
+                });
                 result = await Type.findByIdAndUpdate(
                     typeId,
                     { name },
                     { returnDocument: 'after' }
                 );
+            }
+                
             sendRes(res, 200, result);
         } catch (error) {
             next(error);
