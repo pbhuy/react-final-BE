@@ -129,7 +129,7 @@ module.exports = {
             const scores = await Score.find()
                 .populate({
                     path: 'student teacher type',
-                    select: 'name',
+                    select: 'name mapCode',
                 })
                 .populate({
                     path: 'type',
@@ -151,7 +151,7 @@ module.exports = {
             const scores = await Score.find({type: {$in: types}})
                 .populate({
                     path: 'student teacher',
-                    select: 'name',
+                    select: 'name mapCode',
                 })
                 .populate({
                     path: 'type',
@@ -204,7 +204,7 @@ module.exports = {
             const scores = await Score.find()
                 .populate({
                     path: 'student teacher',
-                    select: 'name',
+                    select: 'name mapCode',
                 })
                 .populate({
                     path: 'type',
@@ -231,7 +231,7 @@ module.exports = {
             const scores = await Score.find({ student: studentId })
                 .populate({
                     path: 'student teacher',
-                    select: 'name',
+                    select: 'name mapCode',
                 })
                 .populate({
                     path: 'type',
@@ -296,7 +296,7 @@ module.exports = {
             const requests = await Request.find()
                 .populate({
                     path: 'student teacher class',
-                    select: 'name',
+                    select: 'name mapCode',
                 })
                 .populate({
                     path: 'comments',
@@ -319,7 +319,7 @@ module.exports = {
             const request = await Request.findById(requestId)
                 .populate({
                     path: 'student teacher class',
-                    select: 'name',
+                    select: 'name mapCode',
                 })
                 .populate({
                     path: 'comments',
@@ -341,7 +341,7 @@ module.exports = {
             const requests = await Request.find({ class: classId })
                 .populate({
                     path: 'student teacher class',
-                    select: 'name',
+                    select: 'name mapCode',
                 })
                 .populate({
                     path: 'comments',
