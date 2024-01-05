@@ -12,7 +12,6 @@ scoreRoute.post('/update-type', scoreController.updateType); // done - test ok
 scoreRoute.post('/delete-type', scoreController.deleteType); // done - test ok
 
 // Score
-
 scoreRoute.get('/scores-final', scoreController.getScoresFinal); // done
 scoreRoute.get('/scores', scoreController.getScores); // done - test ok
 scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done - test ok
@@ -30,8 +29,8 @@ scoreRoute.get('/class-types', scoreController.getTypeByClassId); // done
 // - Add a grade composition with a name and grade scale (only choose in grade structure list)
 scoreRoute.post('/create-type', scoreController.createType); // done
 
-// Remove a grade composition  // done
-scoreRoute.get('/delete-type', scoreController.deleteType); // done
+// // Remove a grade composition  // done
+// scoreRoute.get('/delete-type', scoreController.deleteType); // done
 
 // Update a grade composition (name, grade scale)
 // Mark a grade composition as finalized
@@ -39,8 +38,8 @@ scoreRoute.post('/update-type', scoreController.updateType); // done
 
 // Class owner uploads a csv/xlsx file with student list (StudentId, Full name) // doing
 scoreRoute.post('/mock/add-students', (req, res) => {
-    // @todo: handle xls file here and add to database
-    sendRes(res, 200);
+  // @todo: handle xls file here and add to database
+  sendRes(res, 200);
 });
 
 // extra
@@ -73,6 +72,5 @@ scoreRoute.post('/delete-comment', scoreController.deleteComment); // done
 
 // Mark the final decision for a student review with an updated grade
 scoreRoute.post('/update-score', scoreController.updateScore); // done
-
 
 module.exports = scoreRoute;
