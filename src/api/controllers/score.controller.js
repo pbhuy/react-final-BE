@@ -307,6 +307,67 @@ module.exports = {
             next(error);
         }
     },
+    updateStudentScore: async (req, res, next) => {
+        try {
+            const { teacherId, classId, studentId, scores } = req.body;
+            if (!classId || !teacherId || !scores || !studentId)
+                return next(new ApiError(404, 'Missing field'));
+            // get all scores of student
+            const studentScores = await Score.find({teacher: teacherId, student: studentId}).lean();
+            // update scores of student for each type in class
+            for (let score of scores) {
+                for (let studentScore of studentScores) {
+                    if (score.typeId === studentScore.type.toString()) {
+                        await Score.findByIdAndUpdate(studentScore._id, { value: score.value });
+                        break;
+                    }
+                }
+            }
+            // response result
+            const result = await Score.find({teacher: teacherId, student: studentId}).populate({
+                path: 'student teacher',
+                select: 'name mapCode',
+            }).populate({
+                path: 'type',
+                select: 'name percentage',
+            }).lean();
+            sendRes(res, 200, result);
+        } catch (error) {
+            next(error);
+        }
+    },
+    updateClassScore: async (req, res, next) => {
+        try {
+            const { teacherId, classId, students, scores } = req.body;
+            if (!classId || !teacherId || !scores || !students)
+                return next(new ApiError(404, 'Missing field'));
+            // get all scores of students
+            let studentScores = [];
+            for (let student of students) {
+                studentScores = await Score.find({teacher: teacherId, student: student.studentId}).lean();
+                // update scores of student for each type in class
+                for (let score of scores) {
+                    for (let studentScore of studentScores) {
+                        if (score.typeId === studentScore.type.toString()) {
+                            await Score.findByIdAndUpdate(studentScore._id, { value: score.value });
+                            break;
+                        }
+                    }
+                }
+            }
+            // response result
+            studentScores = await Score.find({teacher: teacherId, student: {$in: students.map(student => student.studentId)}}).populate({
+                path: 'student teacher',
+                select: 'name mapCode',
+            }).populate({
+                path: 'type',
+                select: 'name percentage',
+            }).lean();
+            sendRes(res, 200, studentScores);
+        } catch (error) {
+            next(error);
+        }
+    },
     deleteScore: async (req, res, next) => {
         try {
             const { scoreId } = req.body;

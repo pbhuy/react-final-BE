@@ -19,6 +19,8 @@ scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done - te
 scoreRoute.get('/student-scores', scoreController.getScoreByStudentId); // done - test ok
 scoreRoute.post('/create-score', scoreController.createScore); // done - test ok
 scoreRoute.post('/update-score', scoreController.updateScore); // done - test ok
+scoreRoute.post('/update-student-score', scoreController.updateStudentScore); // done - test ok
+scoreRoute.post('/update-class-score', scoreController.updateClassScore); // done - test ok
 scoreRoute.post('/delete-score', scoreController.deleteScore); // done - test ok
 
 // main API:
