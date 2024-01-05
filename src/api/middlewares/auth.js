@@ -55,7 +55,7 @@ const authorizeAdmin = (req, res, next) => {
   if (req.role === 'admin') {
     return next();
   }
-  return sendErr(res, new ApiError(403, 'Access denied!'));
+  return sendErr(res, new ApiError(403, 'Access denied! You are not admin'));
 };
 
 module.exports = {
@@ -63,4 +63,5 @@ module.exports = {
   authorizeStudent,
   authorizeTeacher,
   authFacebook,
+  authorizeAdmin,
 };

@@ -87,6 +87,9 @@ module.exports = {
                     res,
                     new ApiError(401, "Email or password is incorrect")
                 );
+            // check isLocked account
+            if (account.isLocked)
+                return sendErr(res, new ApiError(401, "Account is locked"));
             const access_token = accessToken({
                 _id: account._id,
                 role: account.role
