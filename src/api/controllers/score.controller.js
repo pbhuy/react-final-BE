@@ -220,6 +220,31 @@ module.exports = {
       next(error);
     }
   },
+  createScores: async (req, res, next) => {
+    try {
+      console.log(req.body);
+      const { studentId, teacherId, scores = [] } = req.body;
+      if (!studentId || !teacherId || !scores.length)
+        return next(new ApiError(404, 'Missing field'));
+
+      const status = [];
+      scores.forEach(async (score) => {
+        const { typeId, value } = score;
+        const newScore = new Score({
+          student: studentId,
+          teacher: teacherId,
+          type: typeId,
+          value,
+        });
+        status.push(newScore.save());
+      });
+
+      const score = await Promise.all(status);
+      sendRes(res, 200, score);
+    } catch (error) {
+      next(error);
+    }
+  },
   updateScore: async (req, res, next) => {
     try {
       const { studentId, teacherId, typeId, value } = req.body;

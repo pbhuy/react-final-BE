@@ -20,6 +20,9 @@ scoreRoute.post('/create-score', scoreController.createScore); // done - test ok
 scoreRoute.post('/update-score', scoreController.updateScore); // done - test ok
 scoreRoute.post('/delete-score', scoreController.deleteScore); // done - test ok
 
+// new
+scoreRoute.post('/create', scoreController.createScores);
+
 // main API:
 
 // - Show current grade structure:
