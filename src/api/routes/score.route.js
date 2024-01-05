@@ -21,6 +21,9 @@ scoreRoute.post('/create-score', scoreController.createScore); // done - test ok
 scoreRoute.post('/update-score', scoreController.updateScore); // done - test ok
 scoreRoute.post('/delete-score', scoreController.deleteScore); // done - test ok
 
+// new
+scoreRoute.post('/create', scoreController.createScores);
+
 // main API:
 
 // - Show current grade structure:
@@ -39,8 +42,8 @@ scoreRoute.post('/update-type', scoreController.updateType); // done
 
 // Class owner uploads a csv/xlsx file with student list (StudentId, Full name) // doing
 scoreRoute.post('/mock/add-students', (req, res) => {
-    // @todo: handle xls file here and add to database
-    sendRes(res, 200);
+  // @todo: handle xls file here and add to database
+  sendRes(res, 200);
 });
 
 // extra
@@ -73,6 +76,5 @@ scoreRoute.post('/delete-comment', scoreController.deleteComment); // done
 
 // Mark the final decision for a student review with an updated grade
 scoreRoute.post('/update-score', scoreController.updateScore); // done
-
 
 module.exports = scoreRoute;
