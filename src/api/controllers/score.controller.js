@@ -12,7 +12,7 @@ module.exports = {
         try {
             const types = await Type.find().populate({
                 path: 'class',
-                select: 'name description',
+                select: 'name description isPublish',
             });
             sendRes(res, 200, types);
         } catch (error) {
@@ -161,7 +161,7 @@ module.exports = {
                 })
                 .populate({
                     path: 'type',
-                    select: 'name percentage',
+                    select: 'name percentage isPublish',
                     populate: {
                         path: 'class',
                         select: 'name',
@@ -183,7 +183,7 @@ module.exports = {
                 })
                 .populate({
                     path: 'type',
-                    select: 'name percentage',
+                    select: 'name percentage isPublish',
                     populate: {
                         path: 'class',
                         select: 'name',
@@ -215,6 +215,7 @@ module.exports = {
                     typeId: type._id,
                     type: type.name,
                     percentage: type.percentage,
+                    isPublish: type.isPublish,
                     scoreId: score._id,
                     value,
                 });
@@ -236,7 +237,7 @@ module.exports = {
                 })
                 .populate({
                     path: 'type',
-                    select: 'name percentage',
+                    select: 'name percentage isPublish',
                     populate: {
                         path: 'class',
                         select: 'name',
@@ -263,7 +264,7 @@ module.exports = {
                 })
                 .populate({
                     path: 'type',
-                    select: 'name percentage',
+                    select: 'name percentage isPublish',
                     populate: {
                         path: 'class',
                         select: 'name',
@@ -364,6 +365,25 @@ module.exports = {
                 select: 'name percentage',
             }).lean();
             sendRes(res, 200, studentScores);
+        } catch (error) {
+            next(error);
+        }
+    },
+    publishScore: async (req, res, next) => {
+        try {
+            const { teacherId, classId } = req.body;
+            if (!classId || !teacherId )
+                return next(new ApiError(404, 'Missing field'));
+            // get all type of classes
+            const types = await Type.find({class: classId}).lean();
+            console.log('types', types);
+            // change isPublish of each type to true
+            for (let type of types) {
+                await Type.findByIdAndUpdate(type._id, { isPublish: true });
+            }
+            // response result
+            const result = await Type.find({class: classId}).lean();
+            sendRes(res, 200, result);
         } catch (error) {
             next(error);
         }
