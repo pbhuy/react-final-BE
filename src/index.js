@@ -89,7 +89,7 @@ app.use('/api', router);
 app.use((err, req, res, next) => {
   const status = err.status ? err.status : 500;
   const message = err.message ? err.message : 'Internal Server Error';
-  sendErr(res, new ApiError(status, message));
+  sendErr(res, {status, message});
 });
 
 server.listen(port, () => {

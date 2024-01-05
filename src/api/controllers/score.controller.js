@@ -31,23 +31,36 @@ module.exports = {
             next(error);
         }
     },
-    createType: async (req, res, next) => {
+    createType: async (req, res, next) => { // done
         try {
             const { name, percentage, classId } = req.body;
             if (!name || !classId)
                 return next(new ApiError(404, 'Missing field'));
-            const typeOfClass = await Type.find({ class: classId });
+            const typeOfClass = await Type.find({ class: classId }).lean();
             let totalPercentage = 0;
-            typeOfClass.forEach(function (type) {
+            let isCreated = true;
+            let message = '';
+            for (let type of typeOfClass) {
                 totalPercentage += type.percentage;
-                if (type.name === name)
-                    return next(new ApiError(404, 'Type existed'));
-                if (totalPercentage + percentage > 1)
-                    return next(new ApiError(404, 'Invalid percentage'));
-            });
-            const type = new Type({ name, percentage, class: classId });
-            await type.save();
-            sendRes(res, 200, type);
+                if (type.name === name) {
+                    console.log('type.name', type.name);
+                    isCreated = false;
+                    message = 'Type existed';
+                    break;
+                }
+                if (totalPercentage + percentage > 1) {
+                    console.log('totalPercentage', totalPercentage);
+                    isCreated = false;
+                    message = 'Invalid percentage';
+                    break;
+                }
+            };
+            if (!isCreated) return next(new ApiError(404, message));
+            else  {
+                const type = new Type({ name, percentage, class: classId });
+                await type.save();
+                sendRes(res, 200, type);
+            }
         } catch (error) {
             next(error);
         }
@@ -60,35 +73,46 @@ module.exports = {
             if (!typeId || (!name && !percentage))
                 return next(new ApiError(404, 'Missing field'));
             const classOfType = await Type.findById(typeId);
-            const typeOfClass = await Type.find({ class: classOfType.class });
+            const classId = classOfType.class.toString();
+            const typeOfClass = await Type.find({ class: classId }).lean();
             let totalPercentage = 0;
-            typeOfClass.forEach(function (type) {
-                if (type.name === name && type._id.toString() !== typeId)
-                    return next(new ApiError(404, 'Type existed'));
-                totalPercentage += type.percentage;
-                if (totalPercentage + percentage > 1)
-                    return next(new ApiError(404, 'Invalid percentage'));
-            });
+            let isUpdate = true;
+                let message = '';
             if (name && percentage) {
-                typeOfClass.forEach(function (type) {
-                    if (type.name === name && type._id.toString() !== typeId)
-                        return next(new ApiError(404, 'Type existed'));
+                
+                for (let type of typeOfClass) {
+                    if (type.name === name) {
+                        isUpdate = false;
+                        message = 'Type existed';
+                        break;
+                    }
                     totalPercentage += type.percentage;
-                    if (totalPercentage + percentage > 1)
-                        return next(new ApiError(404, 'Invalid percentage'));
-                });
-                result = await Type.findByIdAndUpdate(
-                    typeId,
-                    { name, percentage },
-                    { returnDocument: 'after' }
-                );
+                    if (totalPercentage + percentage > 1) {
+                        isUpdate = false;
+                        message = 'Invalid percentage';
+                        break;
+                    } 
+                };
+                if (!isUpdate) return next(new ApiError(404, message))
+                else {
+                    result = await Type.findByIdAndUpdate(
+                        typeId,
+                        { name, percentage },
+                        { returnDocument: 'after' }
+                    );
+                }
             }
             else if (percentage) {
-                typeOfClass.forEach(function (type) {
+                for (let type of typeOfClass) {
                     totalPercentage += type.percentage;
-                    if (totalPercentage + percentage > 1)
-                        return next(new ApiError(404, 'Invalid percentage'));
-                });
+                    if (totalPercentage + percentage > 1) {
+                        isUpdate = false;
+                        message = 'Invalid percentage';
+                        break;
+                    }  
+                };
+                if (!isUpdate) return next(new ApiError(404, message))
+                else
                 result = await Type.findByIdAndUpdate(
                     typeId,
                     { percentage },
@@ -96,17 +120,21 @@ module.exports = {
                 );
             }
             else if (name) {
-                typeOfClass.forEach(function (type) {
-                    if (type.name === name && type._id.toString() !== typeId)
-                        return next(new ApiError(404, 'Type existed'));
-                });
+                for (let type of typeOfClass) {
+                    if (type.name === name) {
+                        isUpdate = false;
+                        message = 'Type existed';
+                        break;
+                    }
+                };
+                if (!isUpdate) return next(new ApiError(404, message))
+                else
                 result = await Type.findByIdAndUpdate(
                     typeId,
                     { name },
                     { returnDocument: 'after' }
                 );
             }
-                
             sendRes(res, 200, result);
         } catch (error) {
             next(error);

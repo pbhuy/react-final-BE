@@ -16,6 +16,10 @@ const TypeSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'ClassRoom',
         },
+        isPublish: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );
