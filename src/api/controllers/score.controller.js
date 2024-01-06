@@ -158,7 +158,7 @@ module.exports = {
   getScoreByClassId: async (req, res, next) => {
     try {
       const { classId } = req.query;
-      const scores = await Score.find()
+      let scores = await Score.find()
         .populate({
           path: 'student teacher',
           select: 'name',
@@ -173,9 +173,13 @@ module.exports = {
         })
         .lean();
       let result = [];
-      scores.forEach(function (score) {
-        if (score.type.class._id.toString() === classId) result.push(score);
-      });
+      console.log('scores');
+      console.log(scores);
+      scores
+        .filter((score) => score.type && score.type.class)
+        .forEach(function (score) {
+          if (score.type.class._id.toString() === classId) result.push(score);
+        });
       sendRes(res, 200, result);
     } catch (error) {
       next(error);
@@ -247,11 +251,11 @@ module.exports = {
   },
   updateScore: async (req, res, next) => {
     try {
-      const { studentId, teacherId, typeId, value } = req.body;
-      if (!studentId || !teacherId || !typeId || !value)
+      const { studentId, teacherId, scoreId, value } = req.body;
+      if (!studentId || !teacherId || !scoreId || !value)
         return next(new ApiError(404, 'Missing field'));
-      const score = await Score.findOneAndUpdate(
-        { student: studentId, teacher: teacherId, type: typeId },
+      const score = await Score.findByIdAndUpdate(
+        scoreId,
         { value },
         { returnDocument: 'after' }
       );
@@ -332,6 +336,10 @@ module.exports = {
             model: 'Account',
             select: 'name',
           },
+        })
+        .populate({
+          path: 'score',
+          select: 'value',
         });
       sendRes(res, 200, requests);
     } catch (error) {
@@ -348,6 +356,7 @@ module.exports = {
         studentId,
         teacherId,
         classId,
+        scoreId,
       } = req.body;
       if (
         !title ||
@@ -356,7 +365,8 @@ module.exports = {
         !teacherId ||
         !classId ||
         !actualScore ||
-        !expectedScore
+        !expectedScore ||
+        !scoreId
       )
         return next(new ApiError(404, 'Missing field'));
       const request = new Request({
@@ -367,6 +377,7 @@ module.exports = {
         student: studentId,
         teacher: teacherId,
         class: classId,
+        score: scoreId,
       });
       await request.save();
       sendRes(res, 201, request);

@@ -54,9 +54,12 @@ scoreRoute.get('/scores-final', scoreController.getScoresFinal); // done
 
 // View list of grade reviews requested by students
 scoreRoute.get('/requests', scoreController.getRequests); // done
-scoreRoute.post('/create-request', scoreController.createRequest); // done
 scoreRoute.get('/request-details', scoreController.getRequestById); // done
 scoreRoute.get('/class-requests', scoreController.getRequestsByClassId); // done
+
+scoreRoute.post('/create-request', scoreController.createRequest); // done
+// Mark the final decision for a student review with an updated grade
+scoreRoute.post('/update-score', scoreController.updateScore); // done
 
 // Update - delete Request
 scoreRoute.post('/update-request', scoreController.updateRequest); // done
@@ -72,8 +75,5 @@ scoreRoute.post('/create-comment', scoreController.createComment); // done
 // Update - Delete comment by id
 scoreRoute.post('/update-comment', scoreController.updateComment); // done
 scoreRoute.post('/delete-comment', scoreController.deleteComment); // done
-
-// Mark the final decision for a student review with an updated grade
-scoreRoute.post('/update-score', scoreController.updateScore); // done
 
 module.exports = scoreRoute;
