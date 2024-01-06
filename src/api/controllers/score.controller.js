@@ -7,6 +7,42 @@ const Request = require('../models/Scores/request.model');
 const Comment = require('../models/Scores/comment.model');
 
 module.exports = {
+  updateScores: async (req, res, next) => {
+    let { listScores } = req.body;
+
+    if (!listScores) {
+      return sendErr(res, new ApiError(400, 'Missing listScores'));
+    }
+
+    listScores = listScores.filter(
+      (score) => score.id && score.value && score.value > 0
+    );
+
+    const results = [];
+
+    for (const score of listScores) {
+      const validScore = await Score.findById(score.id);
+      if (!validScore) {
+        return sendErr(res, new ApiError(400, 'ScoreId not found'));
+      }
+      // update new mapcode
+      const updated = await Score.findByIdAndUpdate(
+        score.id,
+        {
+          value: score.value,
+        },
+        { new: true }
+      );
+      console.log('updated ', updated);
+      results.push(updated);
+    }
+
+    return sendRes(res, 200, {
+      results,
+      totalSuccess: results.length,
+      totalFailed: listScores.length - results.length,
+    });
+  },
   // Type controllers
   getTypes: async (req, res, next) => {
     try {
@@ -173,8 +209,6 @@ module.exports = {
         })
         .lean();
       let result = [];
-      console.log('scores');
-      console.log(scores);
       scores
         .filter((score) => score.type && score.type.class)
         .forEach(function (score) {

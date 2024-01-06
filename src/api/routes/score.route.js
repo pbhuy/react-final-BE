@@ -20,6 +20,9 @@ scoreRoute.post('/create-score', scoreController.createScore); // done - test ok
 scoreRoute.post('/update-score', scoreController.updateScore); // done - test ok
 scoreRoute.post('/delete-score', scoreController.deleteScore); // done - test ok
 
+// excel for update scores
+scoreRoute.post('/update-scores', scoreController.updateScores); // done - test ok
+
 // new
 scoreRoute.post('/create', scoreController.createScores);
 
@@ -38,12 +41,6 @@ scoreRoute.post('/create-type', scoreController.createType); // done
 // Update a grade composition (name, grade scale)
 // Mark a grade composition as finalized
 scoreRoute.post('/update-type', scoreController.updateType); // done
-
-// Class owner uploads a csv/xlsx file with student list (StudentId, Full name) // doing
-scoreRoute.post('/mock/add-students', (req, res) => {
-  // @todo: handle xls file here and add to database
-  sendRes(res, 200);
-});
 
 // extra
 scoreRoute.post('/scores', scoreController.createScore); // done
