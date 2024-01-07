@@ -80,9 +80,9 @@ module.exports = {
   },
   updateType: async (req, res, next) => {
     try {
-      const { name, percentage, typeId } = req.body;
+      const { name, percentage, typeId, isPublish } = req.body;
       let result;
-      if (!typeId || (!name && !percentage))
+      if (!typeId || (!name && !percentage && !isPublish))
         return next(new ApiError(404, 'Missing field'));
       if (name && percentage)
         result = await Type.findByIdAndUpdate(
@@ -100,6 +100,12 @@ module.exports = {
         result = await Type.findByIdAndUpdate(
           typeId,
           { name },
+          { returnDocument: 'after' }
+        );
+      else if (isPublish)
+        result = await Type.findByIdAndUpdate(
+          typeId,
+          { isPublish },
           { returnDocument: 'after' }
         );
       sendRes(res, 200, result);
@@ -229,14 +235,17 @@ module.exports = {
         })
         .populate({
           path: 'type',
-          select: 'name percentage',
+          select: 'name percentage isPublish',
           populate: {
             path: 'class',
             select: 'name',
           },
         })
         .lean();
-      sendRes(res, 200, scores);
+      const filteredScores = scores.filter(
+        (score) => score.type && score.type.isPublish
+      );
+      sendRes(res, 200, filteredScores);
     } catch (error) {
       next(error);
     }
