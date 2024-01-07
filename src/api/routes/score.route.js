@@ -18,6 +18,7 @@ scoreRoute.get('/class-scores', scoreController.getScoreByClassId); // done - te
 scoreRoute.get('/student-scores', scoreController.getScoreByStudentId); // done - test ok
 scoreRoute.post('/create-score', scoreController.createScore); // done - test ok
 scoreRoute.post('/update-score', scoreController.updateScore); // done - test ok
+scoreRoute.post('/request/reject', scoreController.rejectRequest); // done - test ok
 scoreRoute.post('/delete-score', scoreController.deleteScore); // done - test ok
 
 // excel for update scores

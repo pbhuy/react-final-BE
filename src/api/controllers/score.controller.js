@@ -292,6 +292,20 @@ module.exports = {
       next(error);
     }
   },
+  rejectRequest: async (req, res, next) => {
+    try {
+      const { requestId } = req.body;
+      if (!requestId) return next(new ApiError(404, 'Missing field'));
+      const updated = await Request.findByIdAndUpdate(
+        requestId,
+        { isActive: false },
+        { returnDocument: 'after' }
+      );
+      sendRes(res, 200, updated);
+    } catch (error) {
+      next(error);
+    }
+  },
   updateScore: async (req, res, next) => {
     try {
       const { studentId, teacherId, scoreId, value, requestId } = req.body;
