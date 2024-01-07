@@ -56,7 +56,7 @@ scoreRoute.get('/class-requests', scoreController.getRequestsByClassId); // done
 
 scoreRoute.post('/create-request', scoreController.createRequest); // done
 // Mark the final decision for a student review with an updated grade
-scoreRoute.post('/update-score', scoreController.updateScore); // done
+// scoreRoute.post('/update-score', scoreController.updateScore); // done
 
 // Update - delete Request
 scoreRoute.post('/update-request', scoreController.updateRequest); // done

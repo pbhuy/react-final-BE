@@ -42,6 +42,10 @@ const requestSchema = new Schema(
         ref: 'Comment',
       },
     ],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

@@ -294,12 +294,17 @@ module.exports = {
   },
   updateScore: async (req, res, next) => {
     try {
-      const { studentId, teacherId, scoreId, value } = req.body;
+      const { studentId, teacherId, scoreId, value, requestId } = req.body;
       if (!studentId || !teacherId || !scoreId || !value)
         return next(new ApiError(404, 'Missing field'));
       const score = await Score.findByIdAndUpdate(
         scoreId,
         { value },
+        { returnDocument: 'after' }
+      );
+      await Request.findByIdAndUpdate(
+        requestId,
+        { isActive: false },
         { returnDocument: 'after' }
       );
       sendRes(res, 200, score);
@@ -384,7 +389,8 @@ module.exports = {
           path: 'score',
           select: 'value',
         });
-      sendRes(res, 200, requests);
+      const filtered = requests.filter((request) => request.isActive);
+      sendRes(res, 200, filtered);
     } catch (error) {
       next(error);
     }
