@@ -5,6 +5,8 @@ const Type = require('../models/Scores/type.model');
 const Score = require('../models/Scores/score.model');
 const Request = require('../models/Scores/request.model');
 const Comment = require('../models/Scores/comment.model');
+const Notification = require('../models/notification.model');
+const { sendNotification } = require('./notification.controller');
 
 module.exports = {
   updateScores: async (req, res, next) => {
@@ -514,14 +516,51 @@ module.exports = {
 
       // create new comment in request
       const comment = new Comment({ account: accountId, content });
-      await comment.save();
+      const saved = await comment.save();
+
+      const commentWithAccount = await Comment.findById(saved._id).populate({
+        path: 'account',
+        select: 'name',
+      });
 
       // update comments in request
-      await Request.findByIdAndUpdate(
+      const updated = await Request.findByIdAndUpdate(
         requestId,
         { $push: { comments: comment._id } },
         { new: true }
       );
+
+      const teacherId = updated.teacher._id.toString();
+      const studentId = updated.student._id.toString();
+
+      const notification = new Notification({
+        request: updated._id.toString(),
+        receiver: studentId,
+        type: 'chat',
+        comment: commentWithAccount._id.toString(),
+      });
+      const savedNotif = await notification.save();
+
+      if (accountId === teacherId) {
+        sendNotification({
+          request: updated,
+          receiver: studentId,
+          type: 'chat',
+          comment: commentWithAccount,
+        });
+        // send notif to student
+      }
+
+      if (accountId === studentId) {
+        // send notif to teacher
+        sendNotification({
+          request: updated,
+          receiver: teacherId,
+          type: 'chat',
+          comment: commentWithAccount,
+        });
+      }
+
       sendRes(res, 201, comment);
     } catch (error) {
       next(error);

@@ -38,7 +38,7 @@ const configureSocket = (server) => {
         socket.join(userId);
 
         // Emit a welcome message to the connected user
-        io.to(userId).emit('welcome', { message: `Welcome, ${userId}!` });
+        // io.to(userId).emit('welcome', { message: `Welcome, ${userId}!` });
 
         socket.on('disconnect', () => {
           console.log('User disconnected');
