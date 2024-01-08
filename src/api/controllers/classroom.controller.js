@@ -17,11 +17,11 @@ const { getIO } = require('../services/socket');
 
 module.exports = {
   createClass: async (req, res, next) => {
-    const { name, description } = req.body;
+    const { name, description, teacherId } = req.body;
 
     logger(req.body);
     console.log(req.body);
-    if (!name || !description) {
+    if (!name || !description || !teacherId) {
       return sendErr(res, { status: 500, message: 'Missing required params' });
     }
     logger(name, description);
@@ -31,6 +31,13 @@ module.exports = {
       const createdClass = new ClassRoom({ name, description, invitationCode });
       await createdClass.save();
       logger(createdClass);
+
+      const createdTeacher = new TeacherClass({
+        teacherId,
+        classId: createdClass._id,
+      });
+      await createdTeacher.save();
+
       return sendRes(res, 200, createdClass);
     } catch (error) {
       next(error);
