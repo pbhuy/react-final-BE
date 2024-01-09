@@ -1,4 +1,5 @@
 const { getIO } = require('../services/socket');
+const { sendRes, sendErr } = require('../helpers/response');
 
 module.exports = {
   sendNotification: (params) => {
@@ -30,4 +31,5 @@ module.exports = {
         break;
     }
   },
+  getUserNotif: async (req, res) => {},
 };
