@@ -84,6 +84,7 @@ module.exports = {
         });
         account.access_token = access_token;
         sendRes(res, 200, account, 'Login successfully');
+        return;
       }
 
       // check if email found
