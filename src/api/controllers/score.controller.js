@@ -126,9 +126,9 @@ module.exports = {
         const notification = new Notification({
           receiver: scoreType.class._id.toString(),
           type: 'publish',
-          scoreType: result._id.toString(),
+          scoreType: scoreType._id.toString(),
         });
-        const savedNotif = await notification.save();
+        await notification.save();
 
         sendNotification({
           receiver: studentsId,

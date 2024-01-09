@@ -75,7 +75,7 @@ module.exports = {
 
     const classes = await StudentClass.find({ studentId: userid });
     const classesId = classes.map((c) => c.classId);
-    const classNotifications = await Notification.find({
+    let classNotifications = await Notification.find({
       receiver: { $in: classesId },
     })
       .populate({
@@ -86,13 +86,16 @@ module.exports = {
         },
       })
       .populate({
-        path: 'scoreType',
+        path: 'scoreType', // Assuming scoreType is a field in Notification model
         populate: {
           path: 'class',
           select: 'name',
         },
       })
       .sort({ createdAt: -1 });
+
+    // scoreType is null if the score composition is remove by teacher
+    classNotifications = classNotifications.filter((n) => n.scoreType);
 
     const combinedNotifications =
       directNotifications.concat(classNotifications);
