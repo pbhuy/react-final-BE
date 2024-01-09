@@ -9,6 +9,7 @@ module.exports = {
 
     switch (type) {
       case 'create_review':
+      case 'reject':
         const { receiver, sender } = params;
         if (!sender || !receiver) {
           console.error('Missing params');
@@ -20,8 +21,6 @@ module.exports = {
         });
         break;
       case 'approve':
-        break;
-      case 'reject':
         break;
       case 'chat': {
         const { receiver, comment } = params;
@@ -52,7 +51,7 @@ module.exports = {
       .populate({
         path: 'request',
         populate: {
-          path: 'class',
+          path: 'class student teacher',
           select: 'name',
         },
       })

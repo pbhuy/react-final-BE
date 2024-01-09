@@ -304,6 +304,25 @@ module.exports = {
         { isActive: false },
         { returnDocument: 'after' }
       );
+
+      const request = await Request.findById(requestId).populate({
+        path: 'student teacher',
+        select: 'name',
+      });
+
+      const notification = new Notification({
+        request: updated._id.toString(),
+        receiver: request.student._id.toString(),
+        type: 'reject',
+      });
+      await notification.save();
+
+      sendNotification({
+        receiver: request.student._id.toString(),
+        type: 'reject',
+        sender: request.teacher,
+      });
+
       sendRes(res, 200, updated);
     } catch (error) {
       next(error);
