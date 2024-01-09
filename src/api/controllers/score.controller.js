@@ -301,7 +301,7 @@ module.exports = {
       if (!requestId) return next(new ApiError(404, 'Missing field'));
       const updated = await Request.findByIdAndUpdate(
         requestId,
-        { isActive: false },
+        { isActive: false, isApprove: false },
         { returnDocument: 'after' }
       );
 
@@ -340,9 +340,28 @@ module.exports = {
       );
       await Request.findByIdAndUpdate(
         requestId,
-        { isActive: false },
+        { isActive: false, isApprove: true },
         { returnDocument: 'after' }
       );
+
+      const request = await Request.findById(requestId).populate({
+        path: 'student teacher',
+        select: 'name',
+      });
+
+      const notification = new Notification({
+        request: updated._id.toString(),
+        receiver: request.student._id.toString(),
+        type: 'approve',
+      });
+      await notification.save();
+
+      sendNotification({
+        receiver: request.student._id.toString(),
+        type: 'approve',
+        sender: request.teacher,
+      });
+
       sendRes(res, 200, score);
     } catch (error) {
       next(error);

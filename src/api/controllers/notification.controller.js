@@ -10,6 +10,7 @@ module.exports = {
     switch (type) {
       case 'create_review':
       case 'reject':
+      case 'approve':
         const { receiver, sender } = params;
         if (!sender || !receiver) {
           console.error('Missing params');
@@ -20,15 +21,12 @@ module.exports = {
           sender: sender.name,
         });
         break;
-      case 'approve':
-        break;
       case 'chat': {
         const { receiver, comment } = params;
         if (!receiver || !comment) {
           console.error('Missing params');
           return;
         }
-
         io.to(receiver).emit('notification', {
           type,
           sender: comment.account.name,

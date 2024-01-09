@@ -46,6 +46,10 @@ const requestSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    isApprove: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
