@@ -7,6 +7,7 @@ const Request = require('../models/Scores/request.model');
 const Comment = require('../models/Scores/comment.model');
 const Notification = require('../models/notification.model');
 const { sendNotification } = require('./notification.controller');
+const Account = require('../models/account.model');
 
 module.exports = {
   updateScores: async (req, res, next) => {
@@ -444,7 +445,21 @@ module.exports = {
         class: classId,
         score: scoreId,
       });
-      await request.save();
+      const saved = await request.save();
+
+      const notification = new Notification({
+        request: saved._id.toString(),
+        receiver: teacherId,
+        type: 'create',
+      });
+      await notification.save();
+      const student = await Account.findById(studentId).select('name');
+
+      sendNotification({
+        receiver: teacherId,
+        type: 'create_review',
+        sender: student,
+      });
       sendRes(res, 201, request);
     } catch (error) {
       next(error);
@@ -543,7 +558,6 @@ module.exports = {
         const savedNotif = await notification.save();
 
         sendNotification({
-          request: updated,
           receiver: studentId,
           type: 'chat',
           comment: commentWithAccount,
@@ -562,7 +576,6 @@ module.exports = {
 
         // send notif to teacher
         sendNotification({
-          request: updated,
           receiver: teacherId,
           type: 'chat',
           comment: commentWithAccount,

@@ -8,17 +8,25 @@ module.exports = {
     const io = getIO();
 
     switch (type) {
-      case 'create':
+      case 'create_review':
+        const { receiver, sender } = params;
+        if (!sender || !receiver) {
+          console.error('Missing params');
+          return;
+        }
+        io.to(receiver).emit('notification', {
+          type,
+          sender: sender.name,
+        });
         break;
       case 'approve':
         break;
       case 'reject':
         break;
       case 'chat': {
-        const { request, receiver, comment } = params;
-
-        if (!request || !receiver || !comment) {
-          console.eror('Missing params');
+        const { receiver, comment } = params;
+        if (!receiver || !comment) {
+          console.error('Missing params');
           return;
         }
 
@@ -50,7 +58,8 @@ module.exports = {
       })
       .populate({
         path: 'comment',
-      });
+      })
+      .sort({ createdAt: -1 });
     return sendRes(res, 200, notifications);
   },
 };
