@@ -533,15 +533,15 @@ module.exports = {
       const teacherId = updated.teacher._id.toString();
       const studentId = updated.student._id.toString();
 
-      const notification = new Notification({
-        request: updated._id.toString(),
-        receiver: studentId,
-        type: 'chat',
-        comment: commentWithAccount._id.toString(),
-      });
-      const savedNotif = await notification.save();
-
       if (accountId === teacherId) {
+        const notification = new Notification({
+          request: updated._id.toString(),
+          receiver: studentId,
+          type: 'chat',
+          comment: commentWithAccount._id.toString(),
+        });
+        const savedNotif = await notification.save();
+
         sendNotification({
           request: updated,
           receiver: studentId,
@@ -552,6 +552,14 @@ module.exports = {
       }
 
       if (accountId === studentId) {
+        const notification = new Notification({
+          request: updated._id.toString(),
+          receiver: teacherId,
+          type: 'chat',
+          comment: commentWithAccount._id.toString(),
+        });
+        const savedNotif = await notification.save();
+
         // send notif to teacher
         sendNotification({
           request: updated,

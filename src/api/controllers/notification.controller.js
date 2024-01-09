@@ -1,5 +1,6 @@
 const { getIO } = require('../services/socket');
 const { sendRes, sendErr } = require('../helpers/response');
+const Notification = require('../models/notification.model');
 
 module.exports = {
   sendNotification: (params) => {
@@ -31,5 +32,25 @@ module.exports = {
         break;
     }
   },
-  getUserNotif: async (req, res) => {},
+  getUserNotif: async (req, res) => {
+    const { userid } = req.query;
+    if (!userid) {
+      return sendErr(res, 400, 'Missing params');
+    }
+    const notifications = await Notification.find({
+      receiver: userid,
+      isActive: false,
+    })
+      .populate({
+        path: 'request',
+        populate: {
+          path: 'class',
+          select: 'name',
+        },
+      })
+      .populate({
+        path: 'comment',
+      });
+    return sendRes(res, 200, notifications);
+  },
 };
