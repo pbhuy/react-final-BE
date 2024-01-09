@@ -14,11 +14,15 @@ const notifSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ['create', 'approve', 'reject', 'chat'],
+      enum: ['create', 'approve', 'reject', 'chat', 'publish'],
     },
     comment: {
       type: Schema.Types.ObjectId,
       ref: 'Comment',
+    },
+    scoreType: {
+      type: Schema.Types.ObjectId,
+      ref: 'Type',
     },
     isActive: {
       type: Boolean,

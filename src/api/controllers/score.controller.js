@@ -8,6 +8,7 @@ const Comment = require('../models/Scores/comment.model');
 const Notification = require('../models/notification.model');
 const { sendNotification } = require('./notification.controller');
 const Account = require('../models/account.model');
+const StudentClass = require('../models/Classroom/studentclass.model');
 
 module.exports = {
   updateScores: async (req, res, next) => {
@@ -105,12 +106,38 @@ module.exports = {
           { name },
           { returnDocument: 'after' }
         );
-      else if (isPublish)
+      else if (isPublish) {
         result = await Type.findByIdAndUpdate(
           typeId,
           { isPublish },
           { returnDocument: 'after' }
         );
+
+        const scoreType = await Type.findById(result._id.toString()).populate({
+          path: 'class',
+          select: 'name',
+        });
+
+        const studentsInClass = await StudentClass.find({
+          classId: scoreType.class._id.toString(),
+        });
+        const studentsId = studentsInClass.map((student) => student.studentId);
+
+        const notification = new Notification({
+          receiver: scoreType.class._id.toString(),
+          type: 'publish',
+          scoreType: result._id.toString(),
+        });
+        const savedNotif = await notification.save();
+
+        sendNotification({
+          receiver: studentsId,
+          type: 'publish',
+          scoreType,
+        });
+
+        //send notif to all students in class
+      }
       sendRes(res, 200, result);
     } catch (error) {
       next(error);

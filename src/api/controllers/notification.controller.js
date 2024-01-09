@@ -1,6 +1,7 @@
 const { getIO } = require('../services/socket');
 const { sendRes, sendErr } = require('../helpers/response');
 const Notification = require('../models/notification.model');
+const StudentClass = require('../models/Classroom/studentclass.model');
 
 module.exports = {
   sendNotification: (params) => {
@@ -33,6 +34,20 @@ module.exports = {
         });
         break;
       }
+      case 'publish': {
+        const { receiver, scoreType } = params;
+        receiver.forEach((studentId) => {
+          io.to(studentId).emit('notification', {
+            type,
+            scoreType: {
+              name: scoreType.name,
+              class: scoreType.class.name,
+            },
+          });
+        });
+
+        break;
+      }
       default:
         break;
     }
@@ -42,7 +57,7 @@ module.exports = {
     if (!userid) {
       return sendErr(res, 400, 'Missing params');
     }
-    const notifications = await Notification.find({
+    const directNotifications = await Notification.find({
       receiver: userid,
       isActive: false,
     })
@@ -57,6 +72,32 @@ module.exports = {
         path: 'comment',
       })
       .sort({ createdAt: -1 });
-    return sendRes(res, 200, notifications);
+
+    const classes = await StudentClass.find({ studentId: userid });
+    const classesId = classes.map((c) => c.classId);
+    const classNotifications = await Notification.find({
+      receiver: { $in: classesId },
+    })
+      .populate({
+        path: 'request',
+        populate: {
+          path: 'class student teacher',
+          select: 'name',
+        },
+      })
+      .populate({
+        path: 'scoreType',
+        populate: {
+          path: 'class',
+          select: 'name',
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    const combinedNotifications =
+      directNotifications.concat(classNotifications);
+    combinedNotifications.sort((a, b) => b.createdAt - a.createdAt);
+
+    return sendRes(res, 200, combinedNotifications);
   },
 };
