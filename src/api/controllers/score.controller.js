@@ -7,6 +7,8 @@ const Request = require('../models/Scores/request.model');
 const Comment = require('../models/Scores/comment.model');
 const Notification = require('../models/notification.model');
 const { sendNotification } = require('./notification.controller');
+const Account = require('../models/account.model');
+const StudentClass = require('../models/Classroom/studentclass.model');
 
 module.exports = {
   updateScores: async (req, res, next) => {
@@ -104,12 +106,38 @@ module.exports = {
           { name },
           { returnDocument: 'after' }
         );
-      else if (isPublish)
+      else if (isPublish) {
         result = await Type.findByIdAndUpdate(
           typeId,
           { isPublish },
           { returnDocument: 'after' }
         );
+
+        const scoreType = await Type.findById(result._id.toString()).populate({
+          path: 'class',
+          select: 'name',
+        });
+
+        const studentsInClass = await StudentClass.find({
+          classId: scoreType.class._id.toString(),
+        });
+        const studentsId = studentsInClass.map((student) => student.studentId);
+
+        const notification = new Notification({
+          receiver: scoreType.class._id.toString(),
+          type: 'publish',
+          scoreType: scoreType._id.toString(),
+        });
+        await notification.save();
+
+        sendNotification({
+          receiver: studentsId,
+          type: 'publish',
+          scoreType,
+        });
+
+        //send notif to all students in class
+      }
       sendRes(res, 200, result);
     } catch (error) {
       next(error);
@@ -300,9 +328,28 @@ module.exports = {
       if (!requestId) return next(new ApiError(404, 'Missing field'));
       const updated = await Request.findByIdAndUpdate(
         requestId,
-        { isActive: false },
+        { isActive: false, isApprove: false },
         { returnDocument: 'after' }
       );
+
+      const request = await Request.findById(requestId).populate({
+        path: 'student teacher',
+        select: 'name',
+      });
+
+      const notification = new Notification({
+        request: updated._id.toString(),
+        receiver: request.student._id.toString(),
+        type: 'reject',
+      });
+      await notification.save();
+
+      sendNotification({
+        receiver: request.student._id.toString(),
+        type: 'reject',
+        sender: request.teacher,
+      });
+
       sendRes(res, 200, updated);
     } catch (error) {
       next(error);
@@ -320,9 +367,28 @@ module.exports = {
       );
       await Request.findByIdAndUpdate(
         requestId,
-        { isActive: false },
+        { isActive: false, isApprove: true },
         { returnDocument: 'after' }
       );
+
+      const request = await Request.findById(requestId).populate({
+        path: 'student teacher',
+        select: 'name',
+      });
+
+      const notification = new Notification({
+        request: updated._id.toString(),
+        receiver: request.student._id.toString(),
+        type: 'approve',
+      });
+      await notification.save();
+
+      sendNotification({
+        receiver: request.student._id.toString(),
+        type: 'approve',
+        sender: request.teacher,
+      });
+
       sendRes(res, 200, score);
     } catch (error) {
       next(error);
@@ -444,7 +510,21 @@ module.exports = {
         class: classId,
         score: scoreId,
       });
-      await request.save();
+      const saved = await request.save();
+
+      const notification = new Notification({
+        request: saved._id.toString(),
+        receiver: teacherId,
+        type: 'create',
+      });
+      await notification.save();
+      const student = await Account.findById(studentId).select('name');
+
+      sendNotification({
+        receiver: teacherId,
+        type: 'create_review',
+        sender: student,
+      });
       sendRes(res, 201, request);
     } catch (error) {
       next(error);
@@ -533,17 +613,16 @@ module.exports = {
       const teacherId = updated.teacher._id.toString();
       const studentId = updated.student._id.toString();
 
-      const notification = new Notification({
-        request: updated._id.toString(),
-        receiver: studentId,
-        type: 'chat',
-        comment: commentWithAccount._id.toString(),
-      });
-      const savedNotif = await notification.save();
-
       if (accountId === teacherId) {
+        const notification = new Notification({
+          request: updated._id.toString(),
+          receiver: studentId,
+          type: 'chat',
+          comment: commentWithAccount._id.toString(),
+        });
+        const savedNotif = await notification.save();
+
         sendNotification({
-          request: updated,
           receiver: studentId,
           type: 'chat',
           comment: commentWithAccount,
@@ -552,9 +631,16 @@ module.exports = {
       }
 
       if (accountId === studentId) {
+        const notification = new Notification({
+          request: updated._id.toString(),
+          receiver: teacherId,
+          type: 'chat',
+          comment: commentWithAccount._id.toString(),
+        });
+        const savedNotif = await notification.save();
+
         // send notif to teacher
         sendNotification({
-          request: updated,
           receiver: teacherId,
           type: 'chat',
           comment: commentWithAccount,
