@@ -1,18 +1,24 @@
 const classroomController = require('../controllers/classroom.controller');
-const { sendRes, sendErr } = require('../helpers/response');
+const { authenticateJWT, exceptStudent } = require('../middlewares/auth');
 
 const classRoute = require('express').Router();
-
-const logger = (...content) => {
-  console.log('[CLASS ROUTE] ' + content);
-};
-
 // utils API
-
-// @todo: teacher route restricted
 classRoute.get('/', classroomController.getClass);
-classRoute.post('/create', classroomController.createClass);
+classRoute.post(
+  '/create',
+  authenticateJWT,
+  exceptStudent,
+  classroomController.createClass
+);
+// add member via existed invitation code
 classRoute.post('/add', classroomController.addMember);
-classRoute.post('/invite', classroomController.inviteMember);
+
+// invite member via email
+classRoute.post(
+  '/invite',
+  authenticateJWT,
+  exceptStudent,
+  classroomController.inviteMember
+);
 
 module.exports = classRoute;

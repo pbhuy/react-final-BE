@@ -78,9 +78,14 @@ module.exports = {
         const account = await Account.findById(userId).lean();
         if (!account)
           return sendErr(res, new ApiError(400, 'Account not found'));
+
+        if (account.isLocked) {
+          return sendErr(res, new ApiError(400, 'Account is locked'));
+        }
         const access_token = accessToken({
           _id: account._id,
           role: account.role,
+          isLocked: account.isLocked,
         });
         account.access_token = access_token;
         sendRes(res, 200, account, 'Login successfully');
@@ -89,7 +94,11 @@ module.exports = {
 
       // check if email found
       const account = await Account.findOne({ email }).lean();
+
       if (!account) return sendErr(res, new ApiError(400, 'Email not found'));
+      if (account.isLocked) {
+        return sendErr(res, new ApiError(400, 'Account is locked'));
+      }
       // check if password is verified
       const isValid = await bcrypt.compare(password, account.password);
       if (!isValid)

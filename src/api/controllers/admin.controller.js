@@ -1,4 +1,5 @@
 require('dotenv').config();
+const bcrypt = require('bcrypt');
 const Account = require('../models/account.model');
 const ClassRoom = require('../models/Classroom/classroom.model');
 
@@ -7,6 +8,40 @@ const { sendRes, sendErr } = require('../helpers/response');
 const { generateInvitationCode } = require('../helpers/invitaioncode');
 
 module.exports = {
+  createAccount: async (req, res) => {
+    const { email, password, role, name, secretCode } = req.body;
+    console.log(req.body);
+    if (!email || !password || !role || !name) {
+      return sendErr(
+        res,
+        new ApiError(400, 'Missing email or password or role')
+      );
+    }
+
+    if (!secretCode || secretCode !== process.env.SECRET_ADMIN_CODE) {
+      return sendErr(res, new ApiError(400, 'Invalid secret code'));
+    }
+
+    if (role !== 'admin')
+      return sendErr(res, new ApiError(400, 'Invalid role'));
+
+    const foundAccount = await Account.findOne({ email });
+
+    if (foundAccount)
+      return sendErr(res, new ApiError(409, 'Email is already registered'));
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const account = new Account({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+    });
+    await account.save();
+    sendRes(res, 200, 'Admin account been activated.');
+  },
   mappingStudents: async (req, res) => {
     let { students } = req.body;
 

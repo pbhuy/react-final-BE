@@ -17,6 +17,10 @@ const authenticateJWT = (req, res, next) => {
         new ApiError(401, 'Access denied! Missing or invalid token.')
       );
     }
+
+    if (account.isLocked) {
+      return sendErr(res, new ApiError(401, 'Account is locked.'));
+    }
     req._id = account._id;
     req.role = account.role;
     return next();
@@ -51,6 +55,13 @@ const authorizeTeacher = (req, res, next) => {
   return sendErr(res, new ApiError(403, 'Access denied!'));
 };
 
+const exceptStudent = (req, res, next) => {
+  if (req.role === 'teacher' || req.role === 'admin') {
+    return next();
+  }
+  return sendErr(res, new ApiError(403, 'Access denied!'));
+};
+
 const authorizeAdmin = (req, res, next) => {
   if (req.role === 'admin') {
     return next();
@@ -62,5 +73,7 @@ module.exports = {
   authenticateJWT,
   authorizeStudent,
   authorizeTeacher,
+  authorizeAdmin,
   authFacebook,
+  exceptStudent,
 };
