@@ -62,5 +62,6 @@ module.exports = {
   authenticateJWT,
   authorizeStudent,
   authorizeTeacher,
+  authorizeAdmin,
   authFacebook,
 };
