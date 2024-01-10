@@ -8,8 +8,6 @@ const logger = (...content) => {
 };
 
 // utils API
-
-// @todo: teacher route restricted
 classRoute.get('/', classroomController.getClass);
 classRoute.post(
   '/create',
@@ -17,7 +15,15 @@ classRoute.post(
   authorizeTeacher,
   classroomController.createClass
 );
+// add member via existed invitation code
 classRoute.post('/add', classroomController.addMember);
-classRoute.post('/invite', classroomController.inviteMember);
+
+// invite member via email
+classRoute.post(
+  '/invite',
+  authenticateJWT,
+  authorizeTeacher,
+  classroomController.inviteMember
+);
 
 module.exports = classRoute;
