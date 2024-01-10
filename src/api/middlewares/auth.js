@@ -17,6 +17,10 @@ const authenticateJWT = (req, res, next) => {
         new ApiError(401, 'Access denied! Missing or invalid token.')
       );
     }
+
+    if (account.isLocked) {
+      return sendErr(res, new ApiError(401, 'Account is locked.'));
+    }
     req._id = account._id;
     req.role = account.role;
     return next();
