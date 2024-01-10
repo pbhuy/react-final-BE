@@ -45,8 +45,6 @@ module.exports = {
   },
 
   getClass: async (req, res, next) => {
-    const io = getIO();
-
     logger('getClass');
     let { id, fields } = req.query;
     if (!id) {
@@ -115,7 +113,10 @@ module.exports = {
           .filter((id) => ObjectId.isValid(id))
           .filter((c) => c);
 
-        const classes = await ClassRoom.find({ _id: { $in: classIds } });
+        const classes = await ClassRoom.find({
+          _id: { $in: classIds },
+          isActived: true,
+        });
         logger(classes);
 
         return sendRes(

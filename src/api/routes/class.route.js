@@ -1,5 +1,5 @@
 const classroomController = require('../controllers/classroom.controller');
-const { sendRes, sendErr } = require('../helpers/response');
+const { authenticateJWT, authorizeTeacher } = require('../middlewares/auth');
 
 const classRoute = require('express').Router();
 
@@ -11,7 +11,12 @@ const logger = (...content) => {
 
 // @todo: teacher route restricted
 classRoute.get('/', classroomController.getClass);
-classRoute.post('/create', classroomController.createClass);
+classRoute.post(
+  '/create',
+  authenticateJWT,
+  authorizeTeacher,
+  classroomController.createClass
+);
 classRoute.post('/add', classroomController.addMember);
 classRoute.post('/invite', classroomController.inviteMember);
 
