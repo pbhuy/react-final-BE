@@ -1,18 +1,13 @@
 const classroomController = require('../controllers/classroom.controller');
-const { authenticateJWT, authorizeTeacher } = require('../middlewares/auth');
+const { authenticateJWT, exceptStudent } = require('../middlewares/auth');
 
 const classRoute = require('express').Router();
-
-const logger = (...content) => {
-  console.log('[CLASS ROUTE] ' + content);
-};
-
 // utils API
 classRoute.get('/', classroomController.getClass);
 classRoute.post(
   '/create',
   authenticateJWT,
-  authorizeTeacher,
+  exceptStudent,
   classroomController.createClass
 );
 // add member via existed invitation code
@@ -22,7 +17,7 @@ classRoute.post('/add', classroomController.addMember);
 classRoute.post(
   '/invite',
   authenticateJWT,
-  authorizeTeacher,
+  exceptStudent,
   classroomController.inviteMember
 );
 
