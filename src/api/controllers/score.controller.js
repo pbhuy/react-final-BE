@@ -377,7 +377,7 @@ module.exports = {
       });
 
       const notification = new Notification({
-        request: updated._id.toString(),
+        request: requestId,
         receiver: request.student._id.toString(),
         type: 'approve',
       });
