@@ -1,5 +1,9 @@
 const adminController = require('../controllers/admin.controller');
-const { authenticateJWT, authorizeAdmin } = require('../middlewares/auth');
+const {
+  authenticateJWT,
+  authorizeAdmin,
+  exceptStudent,
+} = require('../middlewares/auth');
 
 const adminRoute = require('express').Router();
 
@@ -65,7 +69,7 @@ adminRoute.post(
 adminRoute.post(
   '/students/map',
   authenticateJWT,
-  authorizeAdmin,
+  exceptStudent,
   adminController.mappingStudents
 );
 
